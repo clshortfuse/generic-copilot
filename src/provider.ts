@@ -186,12 +186,12 @@ export class HuggingFaceChatModelProvider implements LanguageModelChatProvider {
 			const config = vscode.workspace.getConfiguration();
 			const userModels = config.get<ModelItem[]>("generic-copilot.models", []);
 
-			// 解析模型ID以处理配置ID
+			// Parse the model ID to handle a potential config ID suffix
 			const parsedModelId = parseModelId(model.id);
 
-			// 查找匹配的用户模型配置
-			// 优先匹配同时具有相同基础ID和配置ID的模型
-			// 如果没有配置ID，则匹配基础ID相同的模型
+			// Find the matching user model configuration
+			// Prefer a match that has both the same base ID and the same config ID
+			// If there is no config ID, match by base ID only
 			let um: ModelItem | undefined = userModels.find(
 				(um) =>
 					um.id === parsedModelId.baseId &&
@@ -199,7 +199,7 @@ export class HuggingFaceChatModelProvider implements LanguageModelChatProvider {
 						(!parsedModelId.configId && !um.configId))
 			);
 
-			// 如果仍然没有找到模型，尝试查找任何匹配基础ID的模型（最宽松的匹配，用于向后兼容）
+			// If still not found, try any model with the same base ID (loosest match for backward compatibility)
 			if (!um) {
 				um = userModels.find((um) => um.id === parsedModelId.baseId);
 			}

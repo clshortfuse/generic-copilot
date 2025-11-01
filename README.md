@@ -2,6 +2,10 @@
 
 Use frontier open LLMs like Qwen3 Coder, Kimi K2, DeepSeek V3.1, GLM 4.5 and more in VS Code with GitHub Copilot Chat powered by any OpenAI-compatible provider 🔥
 
+## Thanks
+
+Heavily inspired (and then extended) by https://github.com/JohnnyZ93/oai-compatible-copilot
+
 ## ✨ Features
 
 - **Provider-First Configuration**: Define providers once with shared settings, then add models that automatically inherit baseUrl, headers, and defaults
@@ -445,62 +449,6 @@ Add fixed delay between consecutive requests:
 
 **Note:** Setting `temperature` or `top_p` to `null` omits the parameter from requests, using provider defaults.
 
----
-
-## 🔧 Migration from Legacy Config
-
-If you have existing flat model configurations, they continue to work. However, we recommend migrating to the provider-first approach:
-
-**Before:**
-
-```json
-{
-  "generic-copilot.baseUrl": "https://api.example.com/v1",
-  "generic-copilot.models": [
-    {
-      "id": "model-a",
-      "owned_by": "provider1",
-      "baseUrl": "https://api.provider1.com/v1",
-      "context_length": 256000,
-      "temperature": 0
-    },
-    {
-      "id": "model-b",
-      "owned_by": "provider1",
-      "baseUrl": "https://api.provider1.com/v1",
-      "context_length": 256000,
-      "temperature": 0
-    }
-  ]
-}
-```
-
-**After:**
-
-```json
-{
-  "generic-copilot.providers": [
-    {
-      "key": "provider1",
-      "baseUrl": "https://api.provider1.com/v1",
-      "defaults": {
-        "context_length": 256000,
-        "temperature": 0
-      }
-    }
-  ],
-  "generic-copilot.models": [
-    {
-      "id": "model-a",
-      "provider": "provider1"
-    },
-    {
-      "id": "model-b",
-      "provider": "provider1"
-    }
-  ]
-}
-```
 
 ---
 

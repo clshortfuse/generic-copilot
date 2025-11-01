@@ -55,13 +55,13 @@ export function estimateMessagesTokens(msgs: readonly vscode.LanguageModelChatRe
 	return total;
 }
 
-/** 针对不同内容类型的 token 估算 */
+/** Token estimation for different content types */
 export function estimateTextTokens(text: string): number {
 	const chineseChars = (text.match(/[\u4e00-\u9fff]/g) || []).length;
 	const englishWords = (text.match(/\b[a-zA-Z]+\b/g) || []).length;
 	const symbols = text.length - chineseChars - englishWords;
 
-	// 中文字符约1.5个token，英文单词约1个token，符号约0.5个token
+	// Approximate: Chinese character ~1.5 tokens, English word ~1 token, symbol ~0.5 tokens
 	return Math.ceil(chineseChars * 1.5 + englishWords + symbols * 0.5);
 }
 

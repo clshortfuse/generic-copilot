@@ -27,7 +27,7 @@ export interface OpenAIChatMessage {
 }
 
 /**
- * 聊天消息内容接口（支持多模态）
+ * Chat message content interface (supports multimodal)
  */
 export interface ChatMessageContent {
 	type: "text" | "image_url";
