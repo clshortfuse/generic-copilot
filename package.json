@@ -35,30 +35,30 @@
 	"contributes": {
 		"languageModelChatProviders": [
 			{
-				"vendor": "oaicopilot",
+				"vendor": "generic-copilot",
 				"displayName": "OAI Compatible",
-				"managementCommand": "oaicopilot.setApikey"
+				"managementCommand": "generic-copilot.setApikey"
 			}
 		],
 		"commands": [
 			{
-				"command": "oaicopilot.setApikey",
-				"title": "OAICopilot: Set OAI Compatible Apikey"
+				"command": "generic-copilot.setApikey",
+				"title": "GenericCopilot: Set OAI Compatible Apikey"
 			},
 			{
-				"command": "oaicopilot.setProviderApikey",
-				"title": "OAICopilot: Set OAI Compatible Multi-Provider Apikey"
+				"command": "generic-copilot.setProviderApikey",
+				"title": "GenericCopilot: Set OAI Compatible Multi-Provider Apikey"
 			}
 		],
 		"configuration": {
 			"title": "OAI Compatible Copilot",
 			"properties": {
-				"oaicopilot.baseUrl": {
+				"generic-copilot.baseUrl": {
 					"type": "string",
 					"default": "https://router.huggingface.co/v1",
 					"description": "The base URL for the Openai Compatible Inference API. Default value is Hugging Face."
 				},
-				"oaicopilot.providers": {
+				"generic-copilot.providers": {
 					"type": "array",
 					"default": [],
 					"items": {
@@ -168,7 +168,7 @@
 					},
 					"description": "A list of provider configurations. Models can reference providers to inherit baseUrl, owned_by, and default parameters."
 				},
-				"oaicopilot.models": {
+				"generic-copilot.models": {
 					"type": "array",
 					"default": [],
 					"items": {
@@ -196,7 +196,7 @@
 							},
 							"baseUrl": {
 								"type": "string",
-								"description": "Base URL for the model provider. If not provided, the global oaicopilot.baseUrl will be used."
+								"description": "Base URL for the model provider. If not provided, the global generic-copilot.baseUrl will be used."
 							},
 							"context_length": {
 								"type": "number",
@@ -357,7 +357,7 @@
 					},
 					"description": "A list of preferred models to use. If provided, these models will be used directly instead of fetching from the API."
 				},
-				"oaicopilot.retry": {
+				"generic-copilot.retry": {
 					"type": "object",
 					"default": {
 						"enabled": true,
@@ -385,7 +385,7 @@
 					},
 					"description": "Retry configuration for handling api errors like [429, 500, 502, 503, 504]."
 				},
-				"oaicopilot.delay": {
+				"generic-copilot.delay": {
 					"type": "number",
 					"default": 0,
 					"minimum": 0,

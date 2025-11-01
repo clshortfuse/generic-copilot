@@ -21,7 +21,7 @@ export async function prepareLanguageModelChatInformation(
 ): Promise<LanguageModelChatInformation[]> {
 	// Check for user-configured models first
 	const config = vscode.workspace.getConfiguration();
-	const userModels = config.get<ModelItem[]>("oaicopilot.models", []);
+	const userModels = config.get<ModelItem[]>("generic-copilot.models", []);
 
 	let infos: LanguageModelChatInformation[];
 	if (userModels && userModels.length > 0) {
@@ -34,18 +34,18 @@ export async function prepareLanguageModelChatInformation(
 			const maxOutput = resolved?.max_completion_tokens ?? resolved?.max_tokens ?? DEFAULT_MAX_TOKENS;
 			const maxInput = Math.max(1, contextLen - maxOutput);
 
-			// 使用配置ID（如果存在）来生成唯一的模型ID
-			const modelId = resolved.configId ? `${resolved.id}::${resolved.configId}` : resolved.id;
-			const modelName = resolved.configId
-				? `${resolved.id}::${resolved.configId} via ${resolved.owned_by}`
-				: `${resolved.id} via ${resolved.owned_by}`;
+			// Use provider/model::configId format for display
+			const modelId = resolved.configId
+				? `${resolved.owned_by}/${resolved.id}::${resolved.configId}`
+				: `${resolved.owned_by}/${resolved.id}`;
+			const modelName = modelId;
 
 			return {
 				id: modelId,
 				name: modelName,
 				tooltip: resolved.configId
-					? `OAI Compatible ${resolved.id} (config: ${resolved.configId}) via ${resolved.owned_by}`
-					: `OAI Compatible via ${resolved.owned_by}`,
+				? `${resolved.owned_by}/${resolved.id}::${resolved.configId}`
+				: `${resolved.owned_by}/${resolved.id}`,
 				family: resolved.family ?? "oai-compatible",
 				version: "1.0.0",
 				maxInputTokens: maxInput,
@@ -82,9 +82,9 @@ export async function prepareLanguageModelChatInformation(
 				const maxOutput = DEFAULT_MAX_TOKENS;
 				const maxInput = Math.max(1, contextLen - maxOutput);
 				entries.push({
-					id: `${m.id}:${p.provider}`,
-					name: `${m.id} via ${p.provider}`,
-					tooltip: `OAI Compatible via ${p.provider}`,
+				id: `${p.provider}/${m.id}`,
+				name: `${p.provider}/${m.id}`,
+				tooltip: `${p.provider}/${m.id}`,
 					family: m.family ?? "oai-compatible",
 					version: "1.0.0",
 					maxInputTokens: maxInput,
@@ -101,10 +101,11 @@ export async function prepareLanguageModelChatInformation(
 				const contextLen = base?.context_length ?? DEFAULT_CONTEXT_LENGTH;
 				const maxOutput = DEFAULT_MAX_TOKENS;
 				const maxInput = Math.max(1, contextLen - maxOutput);
+				const providerName = base?.provider ?? "oai-compatible";
 				entries.push({
-					id: `${m.id}`,
-					name: `${m.id} via OAI Compatible`,
-					tooltip: "OAI Compatible",
+				id: `${providerName}/${m.id}`,
+				name: `${providerName}/${m.id}`,
+				tooltip: `${providerName}/${m.id}`,
 					family: m.family ?? "oai-compatible",
 					version: "1.0.0",
 					maxInputTokens: maxInput,
@@ -131,7 +132,7 @@ export async function prepareLanguageModelChatInformation(
  */
 async function fetchModels(apiKey: string, userAgent: string): Promise<{ models: ModelItem[] }> {
 	const config = vscode.workspace.getConfiguration();
-	const BASE_URL = config.get<string>("oaicopilot.baseUrl", "");
+	const BASE_URL = config.get<string>("generic-copilot.baseUrl", "");
 	if (!BASE_URL || !BASE_URL.startsWith("http")) {
 		throw new Error(`Invalid base URL configuration.`);
 	}
@@ -173,7 +174,7 @@ async function fetchModels(apiKey: string, userAgent: string): Promise<{ models:
  */
 async function ensureApiKey(silent: boolean, secrets: vscode.SecretStorage): Promise<string | undefined> {
 	// Fall back to generic API key
-	let apiKey = await secrets.get("oaicopilot.apiKey");
+	let apiKey = await secrets.get("generic-copilot.apiKey");
 
 	if (!apiKey && !silent) {
 		const entered = await vscode.window.showInputBox({
@@ -184,7 +185,7 @@ async function ensureApiKey(silent: boolean, secrets: vscode.SecretStorage): Pro
 		});
 		if (entered && entered.trim()) {
 			apiKey = entered.trim();
-			await secrets.store("oaicopilot.apiKey", apiKey);
+			await secrets.store("generic-copilot.apiKey", apiKey);
 		}
 	}
 	return apiKey;

@@ -7,24 +7,24 @@
 ## 0.1.2 (2025-10-29)
 
 - Feat: [add support for extra configuration parameters](https://github.com/JohnnyZ93/oai-compatible-copilot/pull/28)
-- Enhanced `oaicopilot.models` configuration including:
+- Enhanced `generic-copilot.models` configuration including:
   - `extra`: Extra request parameters that will be used in /chat/completions.
 
 ## 0.1.1 (2025-10-28)
 
-- Fix: Cannot change apiKey when the `oaicopilot.models` have no baseUrl.
+- Fix: Cannot change apiKey when the `generic-copilot.models` have no baseUrl.
 
 ## 0.1.0 (2025-10-28)
 
 - Feat: [Add request delay to prevent 429 Errors](https://github.com/JohnnyZ93/oai-compatible-copilot/issues/24)
 - Fix: [Not Asking for Key when add new provider](https://github.com/JohnnyZ93/oai-compatible-copilot/issues/26)
-- Add `oaicopilot.delay` configuration: Fixed delay in milliseconds between consecutive requests. Default is 0 (no delay).
+- Add `generic-copilot.delay` configuration: Fixed delay in milliseconds between consecutive requests. Default is 0 (no delay).
 
 ## 0.0.9 (2025-10-27)
 
 - Feat: [Add Retry Mechanism for Model 429 Errors](https://github.com/JohnnyZ93/oai-compatible-copilot/issues/24)
 - Fix: [Thinking block not end and show in new chat](https://github.com/JohnnyZ93/oai-compatible-copilot/issues/25)
-- Add `oaicopilot.retry` configuration including:
+- Add `generic-copilot.retry` configuration including:
   > Retry configuration for handling api errors like [429, 500, 502, 503, 504].
   - `enabled`: Enable retry mechanism for api errors. Default is true.
   - `max_attempts`: Maximum number of retry attempts. Default is 3.
@@ -43,7 +43,7 @@
 ## 0.0.6 (2025-10-10)
 
 - Feat: [OpenAI use `max_completion_tokens` instead of `max_tokens` for GPT-5](https://github.com/JohnnyZ93/oai-compatible-copilot/issues/19)
-- Enhanced `oaicopilot.models` configuration including:
+- Enhanced `generic-copilot.models` configuration including:
   - `max_completion_tokens`: Maximum number of tokens to generate (OpenAI new standard parameter)
   - `reasoning_effort`: Reasoning effort level (OpenAI reasoning configuration)
 
@@ -52,7 +52,7 @@
 
 - Feat: [GLM 4.6 - no thinking tags](https://github.com/JohnnyZ93/oai-compatible-copilot/issues/15)
 - Feat: [Multi-config for the same model](https://github.com/JohnnyZ93/oai-compatible-copilot/issues/18)
-- Enhanced `oaicopilot.models` configuration including:
+- Enhanced `generic-copilot.models` configuration including:
   - `configId`: Configuration ID for this model. Allows defining the same model with different settings (e.g. 'glm-4.6::thinking', 'glm-4.6::no-thinking')
   - `thinking`: Thinking configuration for Zai provider
     - `type`: Set to 'enabled' to enable thinking, 'disabled' to disable thinking
@@ -73,11 +73,11 @@
 ## 0.0.2 (2025-09-18)
 
 - Deleted settings including:
-  - `oaicopilot.enableThinking`
-  - `oaicopilot.maxTokens`
-  - `oaicopilot.temperature`
-  - `oaicopilot.topP`
-- Enhanced `oaicopilot.models` configuration with support for per-model settings including:
+  - `generic-copilot.enableThinking`
+  - `generic-copilot.maxTokens`
+  - `generic-copilot.temperature`
+  - `generic-copilot.topP`
+- Enhanced `generic-copilot.models` configuration with support for per-model settings including:
   - `max_tokens`: Maximum number of tokens to generate
   - `enable_thinking`: Switches between thinking and non-thinking modes
   - `temperature`: Sampling temperature (range: [0, 2])

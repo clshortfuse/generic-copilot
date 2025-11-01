@@ -146,7 +146,7 @@ export class HuggingFaceChatModelProvider implements LanguageModelChatProvider {
 
 		// Apply delay between consecutive requests
 		const config = vscode.workspace.getConfiguration();
-		const delayMs = config.get<number>("oaicopilot.delay", 0);
+		const delayMs = config.get<number>("generic-copilot.delay", 0);
 
 		if (delayMs > 0 && this._lastRequestTime !== null) {
 			const elapsed = Date.now() - this._lastRequestTime;
@@ -184,7 +184,7 @@ export class HuggingFaceChatModelProvider implements LanguageModelChatProvider {
 
 			// get model config from user settings
 			const config = vscode.workspace.getConfiguration();
-			const userModels = config.get<ModelItem[]>("oaicopilot.models", []);
+			const userModels = config.get<ModelItem[]>("generic-copilot.models", []);
 
 			// 解析模型ID以处理配置ID
 			const parsedModelId = parseModelId(model.id);
@@ -228,7 +228,7 @@ export class HuggingFaceChatModelProvider implements LanguageModelChatProvider {
 			// console.log("[OAI Compatible Model Provider] RequestBody:", JSON.stringify(requestBody));
 
 			// send chat request
-			const BASE_URL = resolvedModel?.baseUrl || config.get<string>("oaicopilot.baseUrl", "");
+			const BASE_URL = resolvedModel?.baseUrl || config.get<string>("generic-copilot.baseUrl", "");
 			if (!BASE_URL || !BASE_URL.startsWith("http")) {
 				throw new Error(`Invalid base URL configuration.`);
 			}
@@ -412,7 +412,7 @@ export class HuggingFaceChatModelProvider implements LanguageModelChatProvider {
 		let apiKey: string | undefined;
 		if (provider && provider.trim() !== "") {
 			const normalizedProvider = provider.toLowerCase();
-			const providerKey = `oaicopilot.apiKey.${normalizedProvider}`;
+			const providerKey = `generic-copilot.apiKey.${normalizedProvider}`;
 			apiKey = await this.secrets.get(providerKey);
 
 			if (!apiKey && !useGenericKey) {
@@ -431,7 +431,7 @@ export class HuggingFaceChatModelProvider implements LanguageModelChatProvider {
 
 		// Fall back to generic API key
 		if (!apiKey) {
-			apiKey = await this.secrets.get("oaicopilot.apiKey");
+			apiKey = await this.secrets.get("generic-copilot.apiKey");
 		}
 
 		if (!apiKey && useGenericKey) {
@@ -443,7 +443,7 @@ export class HuggingFaceChatModelProvider implements LanguageModelChatProvider {
 			});
 			if (entered && entered.trim()) {
 				apiKey = entered.trim();
-				await this.secrets.store("oaicopilot.apiKey", apiKey);
+				await this.secrets.store("generic-copilot.apiKey", apiKey);
 			}
 		}
 		return apiKey;

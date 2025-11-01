@@ -416,7 +416,7 @@ export function tryParseJSONObject(text: string): { ok: true; value: Record<stri
  */
 export function createRetryConfig(): RetryConfig {
 	const config = vscode.workspace.getConfiguration();
-	const retryConfig = config.get<RetryConfig>("oaicopilot.retry", {
+	const retryConfig = config.get<RetryConfig>("generic-copilot.retry", {
 		enabled: true,
 		max_attempts: RETRY_MAX_ATTEMPTS,
 		interval_ms: RETRY_INTERVAL_MS,
@@ -518,7 +518,7 @@ export function resolveModelWithProvider(model: ModelItem): ModelItem {
 
 	// Get providers from configuration
 	const config = vscode.workspace.getConfiguration();
-	const providers = config.get<ProviderConfig[]>("oaicopilot.providers", []);
+	const providers = config.get<ProviderConfig[]>("generic-copilot.providers", []);
 
 	// Find the referenced provider
 	const provider = providers.find((p) => p.key === model.provider);

@@ -1,255 +1,594 @@
-# 🤗 OAI Compatible Provider for Copilot
-
-[![CI](https://github.com/JohnnyZ93/oai-compatible-copilot/actions/workflows/release.yml/badge.svg)](https://github.com/JohnnyZ93/oai-compatible-copilot/actions)
-[![License](https://img.shields.io/github/license/JohnnyZ93/oai-compatible-copilot?color=orange&label=License)](https://github.com/JohnnyZ93/oai-compatible-copilot/blob/main/LICENSE)
+# Generic Provider for Copilot
 
 Use frontier open LLMs like Qwen3 Coder, Kimi K2, DeepSeek V3.1, GLM 4.5 and more in VS Code with GitHub Copilot Chat powered by any OpenAI-compatible provider 🔥
 
 ## ✨ Features
-- Supports almost all OpenAI-compatible providers, such as ModelScope, SiliconFlow, DeepSeek...
-- Supports vision models.
-- Offers additional configuration options for chat requests.
-- Supports control model thinking and reasoning content show in chat interface.
-  > ![thinkingPartDemo](./assets/thinkingPartDemo.png)
-- Supports configuring models from multiple providers simultaneously, automatically managing API keys without switch them repeatedly.
-- Supports defining multiple configurations for the same model ID with different settings (e.g. thinking enable/disable for GLM-4.6).
-- Support auto retry mechanism for handling api errors like [429, 500, 502, 503, 504].
+
+- **Provider-First Configuration**: Define providers once with shared settings, then add models that automatically inherit baseUrl, headers, and defaults
+- **Multiple Provider Support**: Manage API keys for unlimited providers with automatic per-provider key storage
+- **Inheritable Defaults**: Set common parameters (temperature, max_tokens, etc.) at the provider level and override per-model as needed
+- **Multiple Configurations per Model**: Define the same model with different settings using `configId` (e.g., thinking vs. no-thinking modes)
+- **Vision Model Support**: Configure models with multimodal capabilities for image inputs
+- **Thinking & Reasoning**: Control display of model reasoning processes with support for OpenRouter, Zai, and other provider formats
+- **Auto-Retry**: Built-in retry mechanism for handling API errors (429, 500, 502, 503, 504)
+- **Flexible Headers**: Inherit custom headers from providers or override per-model
+
 ---
 
 ## Requirements
-- VS Code 1.104.0 or higher.
-- OpenAI-compatible provider API key.
+
+- **VS Code**: 1.104.0 or higher
+- **Dependency**: GitHub Copilot Chat extension
+- **API Keys**: OpenAI-compatible provider API keys
+
 ---
 
 ## ⚡ Quick Start
-1. Install the OAI Compatible Provider for Copilot extension [here](https://marketplace.visualstudio.com/items?itemName=johnny-zhao.oai-compatible-copilot).
-2. Open VS Code Settings and configure `oaicopilot.baseUrl` and `oaicopilot.models`.
-3. Open Github Copilot Chat interface.
-4. Click the model picker and select "Manage Models...".
-5. Choose "OAI Compatible" provider.
-6. Enter your API key — it will be saved locally.
-7. Select the models you want to add to the model picker.
 
-### Settings Example
+### 1. Install Extension
+
+Install the OAI Compatible Provider for Copilot extension from the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=johnny-zhao.oai-compatible-copilot).
+
+### 2. Configure Providers
+
+Open VS Code Settings (JSON) and add your provider configuration:
 
 ```json
-"oaicopilot.baseUrl": "https://api-inference.modelscope.cn/v1",
-"oaicopilot.models": [
+{
+  "generic-copilot.providers": [
     {
-        "id": "Qwen/Qwen3-Coder-480B-A35B-Instruct",
-        "owned_by": "modelscope",
+      "key": "iflow",
+      "baseUrl": "https://apis.iflow.cn/v1",
+      "defaults": {
         "context_length": 256000,
         "max_tokens": 8192,
         "temperature": 0,
         "top_p": 1
-    }
-]
-```
----
-
-## (Optional) Provider-First Configuration
-
-The extension supports a provider-first configuration approach where you define providers once and reference them in model configurations. This reduces duplication and makes it easier to manage multiple models from the same provider.
-
-### Benefits
-- Define common settings (baseUrl, defaults) in one place
-- Models automatically inherit from their provider
-- Easier API key management per provider
-- Override any setting at the model level when needed
-
-### How it works
-1. Define providers in `oaicopilot.providers` with baseUrl and optional defaults
-2. Reference providers in model configurations using the `provider` field
-3. Models inherit baseUrl, owned_by, and defaults from the provider
-4. Model-specific values always override inherited values
-
-### Settings Example
-
-```json
-"oaicopilot.providers": [
-    {
-        "key": "modelscope",
-        "displayName": "ModelScope",
-        "baseUrl": "https://api-inference.modelscope.cn/v1",
-        "defaults": {
-            "context_length": 256000,
-            "max_tokens": 8192,
-            "temperature": 0,
-            "top_p": 1
-        }
+      }
     },
     {
-        "key": "siliconflow",
-        "displayName": "SiliconFlow",
-        "baseUrl": "https://api.siliconflow.cn/v1",
-        "defaults": {
-            "context_length": 128000,
-            "max_tokens": 4096,
-            "temperature": 0.7
-        }
+      "key": "synthetic",
+      "baseUrl": "https://api.synthetic.new/v1/openai",
+      "defaults": {
+        "context_length": 192000,
+        "max_tokens": 16384,
+        "temperature": 0.7
+      }
     }
-],
-"oaicopilot.models": [
+  ],
+  "generic-copilot.models": [
     {
-        "id": "Qwen/Qwen3-Coder-480B-A35B-Instruct",
-        "provider": "modelscope"
-        // Inherits: baseUrl, owned_by: "modelscope", and all defaults from provider
+      "id": "qwen3-coder",
+      "provider": "iflow"
     },
     {
-        "id": "deepseek-ai/DeepSeek-V3",
-        "provider": "modelscope",
-        "temperature": 0.5
-        // Inherits from provider but overrides temperature
+      "id": "minimax-m2",
+      "provider": "iflow",
+      "temperature": 0.5
     },
     {
-        "id": "Qwen/Qwen2.5-Coder-32B-Instruct",
-        "provider": "siliconflow",
-        "max_tokens": 16384
-        // Inherits from siliconflow provider but overrides max_tokens
+      "id": "glm4.6",
+      "provider": "synthetic"
     }
-]
+  ]
+}
 ```
 
-In this example:
-- Models reference providers using the `provider` field
-- The provider's `key` becomes the model's `owned_by`
-- Models inherit `baseUrl` and all `defaults` from the provider
-- Individual models can override any inherited setting
+### 3. Set API Keys
+
+1. Open Command Palette (`Ctrl+Shift+P` or `Cmd+Shift+P`)
+2. Run: **"GenericCopilot: Set OAI Compatible Multi-Provider Apikey"**
+3. Select your provider (e.g., `iflow`)
+4. Enter the API key for that provider
+
+Repeat for each provider. Keys are stored securely in VS Code's secret storage as `generic-copilot.apiKey.<provider-key>`.
+
+### 4. Use in Copilot Chat
+
+1. Open GitHub Copilot Chat
+2. Click the model picker
+3. Select **"Manage Models..."**
+4. Choose **"OAI Compatible"** provider
+5. Select the models you want to enable
+6. Start chatting!
 
 ---
 
-## (Optional) Multi-Provider Guide
+## 📖 Configuration Guide
 
-> `owned_by` in model config is used for group apiKey. The storage key is `oaicopilot.apiKey.${owned_by}`.
-> When using provider-first configuration, the provider's `key` is automatically used as `owned_by`.
+### Provider Configuration
 
-1. Open VS Code Settings and configure `oaicopilot.models` (or use `oaicopilot.providers` for provider-first configuration).
-2. Open command center ( Ctrl + Shift + P ), and search "OAICopilot: Set OAI Compatible Multi-Provider Apikey" to configure provider-specific API keys.
-3. Open Github Copilot Chat interface.
-4. Click the model picker and select "Manage Models...".
-5. Choose "OAI Compatible" provider.
-6. Select the models you want to add to the model picker.
+Providers are the foundation of the configuration system. Each provider defines shared settings that cascade to all its models.
 
-### Settings Example (Direct Model Configuration)
+#### Provider Schema
 
 ```json
-"oaicopilot.baseUrl": "https://api-inference.modelscope.cn/v1",
-"oaicopilot.models": [
+{
+  "key": "string",           // Required: Unique identifier (lowercase, used for API keys)
+  "baseUrl": "string",       // Required: API endpoint base URL
+  "headers": {               // Optional: Custom HTTP headers for all requests
+    "X-Custom-Header": "value"
+  },
+  "defaults": {              // Optional: Default parameters inherited by models
+    "context_length": 128000,
+    "max_tokens": 4096,
+    "temperature": 0.7,
+    "top_p": 1,
+    "family": "oai-compatible",
+    // ... any model parameter
+  }
+}
+```
+
+#### Example: Multiple Providers
+
+```json
+{
+  "generic-copilot.providers": [
     {
-        "id": "Qwen/Qwen3-Coder-480B-A35B-Instruct",
-        "owned_by": "modelscope",
+      "key": "modelscope",
+      "baseUrl": "https://api-inference.modelscope.cn/v1",
+      "headers": {
+        "X-Source": "vscode-extension"
+      },
+      "defaults": {
         "context_length": 256000,
         "max_tokens": 8192,
-        "temperature": 0,
-        "top_p": 1
+        "temperature": 0
+      }
     },
     {
-        "id": "qwen3-coder",
-        "owned_by": "iflow",
-        "baseUrl": "https://apis.iflow.cn/v1",
-        "context_length": 256000,
-        "max_tokens": 8192,
-        "temperature": 0,
-        "top_p": 1
+      "key": "openrouter",
+      "baseUrl": "https://openrouter.ai/api/v1",
+      "defaults": {
+        "reasoning": {
+          "enabled": true,
+          "effort": "medium"
+        }
+      }
+    },
+    {
+      "key": "zai",
+      "baseUrl": "https://open.zaidata.com/v1",
+      "defaults": {
+        "temperature": 0.7
+      }
     }
-]
+  ]
+}
 ```
 
----
+### Model Configuration
 
-## (Optional) Multi-config for the same model
+Models reference providers and automatically inherit their settings. You can override any inherited value at the model level.
 
-You can define multiple configurations for the same model ID by using the `configId` field. This allows you to have the same base model with different settings for different use cases.
-
-To use this feature:
-
-1. Add the `configId` field to your model configuration
-2. Each configuration with the same `id` must have a unique `configId`
-3. The model will appear as separate entries in the VS Code model picker
-
-### Settings Example
+#### Model Schema
 
 ```json
-"oaicopilot.models": [
-    {
-        "id": "glm-4.6",
-        "configId": "thinking",
-        "owned_by": "zai",
-        "temperature": 0.7,
-        "top_p": 1,
-        "thinking": {
-            "type": "enabled"
-        }
-    },
-    {
-        "id": "glm-4.6",
-        "configId": "no-thinking",
-        "owned_by": "zai",
-        "temperature": 0,
-        "top_p": 1,
-        "thinking": {
-            "type": "disabled"
-        }
-    }
-]
+{
+  "id": "string",              // Required: Model identifier
+  "provider": "string",        // Required: Provider key to inherit from
+  "configId": "string",        // Optional: Create multiple configs of same model
+  "baseUrl": "string",         // Optional: Override provider's baseUrl
+  "headers": {},               // Optional: Merge with or override provider headers
+  "temperature": 0.5,          // Optional: Override any provider default
+  // ... any parameter can be overridden
+}
 ```
 
-In this example, you'll have three different configurations of the glm-4.6 model available in VS Code:
-- `glm-4.6::thinking` - use GLM-4.6 with thinking
-- `glm-4.6::no-thinking` - use GLM-4.6 without thinking
+#### Example: Models with Inheritance
+
+```json
+{
+  "generic-copilot.models": [
+    {
+      "id": "Qwen/Qwen3-Coder-480B",
+      "provider": "modelscope"
+      // Inherits: baseUrl, headers, all defaults from modelscope
+    },
+    {
+      "id": "deepseek-v3",
+      "provider": "modelscope",
+      "temperature": 0.5,
+      "max_tokens": 16384
+      // Inherits from modelscope but overrides temperature and max_tokens
+    },
+    {
+      "id": "claude-3.5-sonnet",
+      "provider": "openrouter",
+      "reasoning": {
+        "effort": "high"
+      }
+      // Inherits reasoning.enabled from provider, overrides effort
+    }
+  ]
+}
+```
+
+### Multi-Config Models
+
+Use `configId` to define multiple configurations for the same model with different settings:
+
+```json
+{
+  "generic-copilot.models": [
+    {
+      "id": "glm-4.6",
+      "configId": "thinking",
+      "provider": "zai",
+      "thinking": {
+        "type": "enabled"
+      }
+    },
+    {
+      "id": "glm-4.6",
+      "configId": "fast",
+      "provider": "zai",
+      "temperature": 0,
+      "thinking": {
+        "type": "disabled"
+      }
+    }
+  ]
+}
+```
+
+Models will appear in the picker as:
+- `glm-4.6::thinking via zai`
+- `glm-4.6::fast via zai`
 
 ---
 
-## Provider Configuration
-Providers can be defined to reduce duplication and simplify configuration management. Each provider can specify:
+## 🔑 API Key Management
 
-- `key` (required): Canonical provider key (lowercase, used as `owned_by` and for API key storage)
-- `displayName`: Display name for the provider
-- `baseUrl` (required): Base URL for the provider's API endpoint
-- `defaults`: Default parameters that models can inherit, including:
-  - All model parameters listed below (context_length, max_tokens, temperature, etc.)
-  - Models automatically inherit these defaults but can override any value
+### Per-Provider Keys
 
-When a model specifies a `provider` field, it inherits `baseUrl`, `owned_by` (from provider key), and all defaults from the provider configuration.
+Each provider has its own API key stored securely:
+
+- **Storage Key**: `generic-copilot.apiKey.<provider-key>`
+- **Example**: For provider `key: "iflow"`, the storage key is `generic-copilot.apiKey.iflow`
+
+### Setting Keys
+
+**Via Command Palette:**
+
+1. `Ctrl+Shift+P` (or `Cmd+Shift+P`)
+2. **"GenericCopilot: Set OAI Compatible Multi-Provider Apikey"**
+3. Select provider from list
+4. Enter API key (or clear by leaving empty)
+
+**Automatic Prompting:**
+
+If a model is selected without an API key configured, you'll be prompted to enter one when making your first request.
+
+### Key Resolution
+
+When making a request:
+
+1. Check for provider-specific key: `generic-copilot.apiKey.<provider-key>`
+2. If not found and no custom `Authorization` header is set, the request proceeds without authentication (some providers allow this)
 
 ---
 
-## Model Parameters
-All parameters support individual configuration for different models, providing highly flexible model tuning capabilities.
+## 🎛️ Advanced Configuration
 
-- `id` (required): Model identifier
-- `provider`: Reference to a provider key for inheriting configuration. When specified, the model inherits baseUrl, owned_by, and defaults from the provider
-- `configId`: Configuration ID for this model. Allows defining the same model with different settings (e.g. 'glm-4.6::thinking', 'glm-4.6::no-thinking')
-- `owned_by`: Model provider (automatically inherited from provider key if `provider` field is used)
-- `family`: Model family (e.g., 'gpt-4', 'claude-3', 'gemini'). Enables model-specific optimizations and behaviors. Defaults to 'oai-compatible' if not specified.
-- `baseUrl`: Model-specific base URL. If not provided, inherits from provider or falls back to global `oaicopilot.baseUrl`
-- `context_length`: The context length supported by the model. Default value is 128000
-- `max_tokens`: Maximum number of tokens to generate (range: [1, context_length]). Default value is 4096
-- `max_completion_tokens`: Maximum number of tokens to generate (OpenAI new standard parameter)
-- `vision`: Whether the model supports vision capabilities. Defaults to false
-- `temperature`: Sampling temperature (range: [0, 2]). Lower values make the output more deterministic, higher values more creative. Default value is 0
-- `top_p`: Top-p sampling value (range: (0, 1]). Default value is 1
-- `top_k`: Top-k sampling value (range: [1, ∞)). Optional parameter
-- `min_p`: Minimum probability threshold (range: [0, 1]). Optional parameter
-- `frequency_penalty`: Frequency penalty (range: [-2, 2]). Optional parameter
-- `presence_penalty`: Presence penalty (range: [-2, 2]). Optional parameter
-- `repetition_penalty`: Repetition penalty (range: (0, 2]). Optional parameter
-- `enable_thinking`: Enable model thinking and reasoning content display (for non-OpenRouter providers)
-- `thinking_budget`: Maximum token count for thinking chain output. Optional parameter
-- `reasoning`: OpenRouter reasoning configuration, includes the following options:
-  - `enabled`: Enable reasoning functionality (if not specified, will be inferred from effort or max_tokens)
-  - `effort`: Reasoning effort level (high, medium, low, minimal, auto)
-  - `exclude`: Exclude reasoning tokens from the final response
-  - `max_tokens`: Specific token limit for reasoning (Anthropic style, as an alternative to effort)
-- `thinking`: Thinking configuration for Zai provider
-  - `type`: Set to 'enabled' to enable thinking, 'disabled' to disable thinking
-- `reasoning_effort`: Reasoning effort level (OpenAI reasoning configuration)
-- `extra`: Extra request parameters that will be used in /chat/completions.
+### Custom Headers
+
+Headers can be set at provider or model level and are merged with model taking precedence:
+
+```json
+{
+  "generic-copilot.providers": [
+    {
+      "key": "custom",
+      "baseUrl": "https://api.example.com/v1",
+      "headers": {
+        "X-Provider-ID": "vscode",
+        "X-Region": "us-west"
+      }
+    }
+  ],
+  "generic-copilot.models": [
+    {
+      "id": "model-1",
+      "provider": "custom",
+      "headers": {
+        "X-Region": "eu-central",  // Overrides provider's X-Region
+        "X-Model-Tier": "premium"   // Adds new header
+      }
+    }
+  ]
+}
+```
+
+Final headers for `model-1`:
+- `X-Provider-ID: vscode` (from provider)
+- `X-Region: eu-central` (overridden by model)
+- `X-Model-Tier: premium` (from model)
+
+### Vision Models
+
+Enable image input support:
+
+```json
+{
+  "generic-copilot.providers": [
+    {
+      "key": "vision-provider",
+      "baseUrl": "https://api.vision.example/v1",
+      "defaults": {
+        "vision": true  // All models inherit vision capability
+      }
+    }
+  ],
+  "generic-copilot.models": [
+    {
+      "id": "gpt-4-vision",
+      "provider": "vision-provider"
+    },
+    {
+      "id": "text-only-model",
+      "provider": "vision-provider",
+      "vision": false  // Override to disable vision
+    }
+  ]
+}
+```
+
+### Thinking & Reasoning Models
+
+Configure display of model reasoning:
+
+**Zai Provider (Thinking):**
+
+```json
+{
+  "id": "glm-4.6",
+  "provider": "zai",
+  "thinking": {
+    "type": "enabled"
+  },
+  "thinking_budget": 2048
+}
+```
+
+**OpenRouter (Reasoning):**
+
+```json
+{
+  "id": "claude-3-opus",
+  "provider": "openrouter",
+  "reasoning": {
+    "enabled": true,
+    "effort": "high",
+    "exclude": false
+  }
+}
+```
+
+**OpenAI (Reasoning Effort):**
+
+```json
+{
+  "id": "o1-preview",
+  "provider": "openai",
+  "reasoning_effort": "high"
+}
+```
+
+### Retry Configuration
+
+Configure automatic retries for transient errors:
+
+```json
+{
+  "generic-copilot.retry": {
+    "enabled": true,
+    "max_attempts": 3,
+    "interval_ms": 1000
+  }
+}
+```
+
+Retries apply to HTTP status codes: 429, 500, 502, 503, 504.
+
+### Request Delay
+
+Add fixed delay between consecutive requests:
+
+```json
+{
+  "generic-copilot.delay": 500  // milliseconds
+}
+```
+
 ---
 
-## Thanks to
+## 📋 Complete Parameter Reference
 
-Thanks to all the people who contribute.
+### Provider Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `key` | string | ✅ | Unique provider identifier (lowercase) |
+| `baseUrl` | string | ✅ | API endpoint base URL |
+| `headers` | object | ❌ | Custom HTTP headers for requests |
+| `defaults` | object | ❌ | Default parameters inherited by models |
+
+### Model Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `id` | string | — | **Required.** Model identifier |
+| `provider` | string | — | **Required.** Provider key to inherit from |
+| `configId` | string | — | Optional config ID for multiple variants |
+| `baseUrl` | string | inherited | Override provider's baseUrl |
+| `headers` | object | inherited | Merge with provider headers |
+| `family` | string | `"oai-compatible"` | Model family (gpt-4, claude-3, etc.) |
+| `context_length` | number | `128000` | Maximum context window |
+| `max_tokens` | number | `4096` | Maximum output tokens |
+| `max_completion_tokens` | number | — | OpenAI standard max output |
+| `vision` | boolean | `false` | Enable image input support |
+| `temperature` | number \| null | `0` | Sampling temperature (0-2) |
+| `top_p` | number \| null | `1` | Nucleus sampling (0-1] |
+| `top_k` | number | — | Top-k sampling [1, ∞) |
+| `min_p` | number | — | Minimum probability [0, 1] |
+| `frequency_penalty` | number | — | Frequency penalty [-2, 2] |
+| `presence_penalty` | number | — | Presence penalty [-2, 2] |
+| `repetition_penalty` | number | — | Repetition penalty (0, 2] |
+| `enable_thinking` | boolean | `false` | Enable thinking display |
+| `thinking_budget` | number | — | Max thinking tokens |
+| `thinking` | object | — | Zai thinking config |
+| `reasoning` | object | — | OpenRouter reasoning config |
+| `reasoning_effort` | string | — | OpenAI reasoning effort |
+| `extra` | object | — | Additional request parameters |
+
+**Note:** Setting `temperature` or `top_p` to `null` omits the parameter from requests, using provider defaults.
+
+---
+
+## 🔧 Migration from Legacy Config
+
+If you have existing flat model configurations, they continue to work. However, we recommend migrating to the provider-first approach:
+
+**Before:**
+
+```json
+{
+  "generic-copilot.baseUrl": "https://api.example.com/v1",
+  "generic-copilot.models": [
+    {
+      "id": "model-a",
+      "owned_by": "provider1",
+      "baseUrl": "https://api.provider1.com/v1",
+      "context_length": 256000,
+      "temperature": 0
+    },
+    {
+      "id": "model-b",
+      "owned_by": "provider1",
+      "baseUrl": "https://api.provider1.com/v1",
+      "context_length": 256000,
+      "temperature": 0
+    }
+  ]
+}
+```
+
+**After:**
+
+```json
+{
+  "generic-copilot.providers": [
+    {
+      "key": "provider1",
+      "baseUrl": "https://api.provider1.com/v1",
+      "defaults": {
+        "context_length": 256000,
+        "temperature": 0
+      }
+    }
+  ],
+  "generic-copilot.models": [
+    {
+      "id": "model-a",
+      "provider": "provider1"
+    },
+    {
+      "id": "model-b",
+      "provider": "provider1"
+    }
+  ]
+}
+```
+
+---
+
+## 💡 Tips & Best Practices
+
+### Organize by Provider
+
+Group models by provider to make configuration easier to manage and reduce duplication.
+
+### Use Defaults Strategically
+
+Set common parameters in provider defaults and only override when needed:
+
+```json
+{
+  "key": "provider",
+  "defaults": {
+    "temperature": 0.7,
+    "max_tokens": 4096
+  }
+}
+```
+
+### Naming Convention
+
+Use lowercase provider keys that match the service name for consistency:
+- ✅ `"key": "openai"`
+- ✅ `"key": "anthropic"`
+- ❌ `"key": "OpenAI"`
+
+### ConfigId for Variants
+
+Use descriptive `configId` values:
+- `"thinking"` / `"no-thinking"`
+- `"fast"` / `"accurate"`
+- `"vision"` / `"text-only"`
+
+### Headers for Custom Auth
+
+If a provider uses non-standard authentication, set it in headers:
+
+```json
+{
+  "headers": {
+    "X-API-Key": "your-key-here"
+  }
+}
+```
+
+---
+
+## 🐛 Troubleshooting
+
+### Models Not Appearing
+
+1. Check provider `key` matches exactly in both provider and model config
+2. Verify `baseUrl` is correct and accessible
+3. Look for errors in VS Code Developer Console (`Help > Toggle Developer Tools`)
+
+### Authentication Errors
+
+1. Verify API key is set: Run "Set Multi-Provider Apikey" command
+2. Check if provider requires custom headers
+3. Ensure `baseUrl` includes correct path (usually `/v1`)
+
+### Inheritance Not Working
+
+1. Confirm `provider` field matches a provider's `key` exactly (case-sensitive)
+2. Check Developer Console for warnings about missing providers
+3. Verify JSON syntax is valid (no trailing commas, quotes closed)
+
+### Duplicate Model IDs
+
+Use `configId` to disambiguate models with the same `id`:
+
+```json
+{
+  "id": "same-model",
+  "configId": "variant-a",
+  "provider": "provider1"
+}
+```
+
+---
+
+## 🙏 Thanks
+
+Thanks to all contributors and the following projects:
 
 - [Contributors](https://github.com/JohnnyZ93/oai-compatible-copilot/graphs/contributors)
 - [Hugging Face Chat Extension](https://github.com/huggingface/huggingface-vscode-chat)
@@ -257,6 +596,8 @@ Thanks to all the people who contribute.
 
 ---
 
-## Support & License
-- Open issues: https://github.com/JohnnyZ93/oai-compatible-copilot/issues
-- License: MIT License Copyright (c) 2025 Johnny Zhao
+## 📄 License & Support
+
+- **License**: MIT License Copyright (c) 2025 Johnny Zhao
+- **Issues**: https://github.com/JohnnyZ93/oai-compatible-copilot/issues
+- **Repository**: https://github.com/JohnnyZ93/oai-compatible-copilot

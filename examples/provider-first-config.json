@@ -3,7 +3,7 @@
   "_comment2": "This example demonstrates the new provider-first configuration approach",
   "_comment3": "that reduces duplication and simplifies multi-provider setups.",
   
-  "oaicopilot.providers": [
+  "generic-copilot.providers": [
     {
       "key": "modelscope",
       "displayName": "ModelScope",
@@ -54,7 +54,7 @@
     }
   ],
   
-  "oaicopilot.models": [
+  "generic-copilot.models": [
     {
       "_comment": "Model inheriting all defaults from modelscope provider",
       "id": "Qwen/Qwen3-Coder-480B-A35B-Instruct",
