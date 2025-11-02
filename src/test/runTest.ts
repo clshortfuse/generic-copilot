@@ -15,7 +15,10 @@ async function main() {
         await runTests({
             extensionDevelopmentPath,
             extensionTestsPath,
-            launchArgs: ['--disable-extensions'] // Disable other extensions to reduce interference
+            launchArgs: [
+                '--disable-extensions',
+                '--enable-proposed-api=mcowger.generic-copilot-providers'
+            ]
         });
     } catch (err) {
         console.error('Failed to run tests:', err);
