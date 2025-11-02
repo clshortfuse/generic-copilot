@@ -2,7 +2,7 @@
   "_comment1": "Provider-first Configuration Example",
   "_comment2": "This example demonstrates the new provider-first configuration approach",
   "_comment3": "that reduces duplication and simplifies multi-provider setups.",
-  
+
   "generic-copilot.providers": [
     {
       "key": "modelscope",
@@ -13,7 +13,7 @@
         "max_tokens": 8192,
         "temperature": 0,
         "top_p": 1,
-        "family": "oai-compatible"
+        "family": "generic"
       }
     },
     {
@@ -53,7 +53,7 @@
       }
     }
   ],
-  
+
   "generic-copilot.models": [
     {
       "_comment": "Model inheriting all defaults from modelscope provider",

@@ -259,7 +259,7 @@ export function convertTools(options: vscode.ProvideLanguageModelChatResponseOpt
 	let tool_choice: "auto" | { type: "function"; function: { name: string } } = "auto";
 	if (options.toolMode === vscode.LanguageModelChatToolMode.Required) {
 		if (tools.length !== 1) {
-			console.error("[OAI Compatible Model Provider] ToolMode.Required but multiple tools:", tools.length);
+			console.error("[Generic Compatible Model Provider] ToolMode.Required but multiple tools:", tools.length);
 			throw new Error("LanguageModelChatToolMode.Required is not supported with more than one tool");
 		}
 		tool_choice = { type: "function", function: { name: sanitizeFunctionName(tools[0].name) } };
@@ -275,7 +275,7 @@ export function convertTools(options: vscode.ProvideLanguageModelChatResponseOpt
 export function validateTools(tools: readonly vscode.LanguageModelChatTool[]): void {
 	for (const tool of tools) {
 		if (!tool.name.match(/^[\w-]+$/)) {
-			console.error("[OAI Compatible Model Provider] Invalid tool name detected:", tool.name);
+			console.error("[Generic Compatible Model Provider] Invalid tool name detected:", tool.name);
 			throw new Error(
 				`Invalid tool name "${tool.name}": only alphanumeric characters, hyphens, and underscores are allowed.`
 			);
@@ -290,7 +290,7 @@ export function validateTools(tools: readonly vscode.LanguageModelChatTool[]): v
 export function validateRequest(messages: readonly vscode.LanguageModelChatRequestMessage[]): void {
 	const lastMessage = messages[messages.length - 1];
 	if (!lastMessage) {
-		console.error("[OAI Compatible Model Provider] No messages in request");
+		console.error("[Generic Compatible Model Provider] No messages in request");
 		throw new Error("Invalid request: no messages.");
 	}
 
@@ -312,7 +312,7 @@ export function validateRequest(messages: readonly vscode.LanguageModelChatReque
 				const nextMessage = messages[nextMessageIdx++];
 				if (!nextMessage || nextMessage.role !== vscode.LanguageModelChatMessageRole.User) {
 					console.error(
-						"[OAI Compatible Model Provider] Validation failed: missing tool result for call IDs:",
+						"[Generic Compatible Model Provider] Validation failed: missing tool result for call IDs:",
 						Array.from(toolCallIds)
 					);
 					throw new Error(errMsg);
@@ -324,7 +324,7 @@ export function validateRequest(messages: readonly vscode.LanguageModelChatReque
 							(Object.getPrototypeOf(part as object) as { constructor?: { name?: string } } | undefined)?.constructor
 								?.name ?? typeof part;
 						console.error(
-							"[OAI Compatible Model Provider] Validation failed: expected tool result part, got:",
+							"[Generic Compatible Model Provider] Validation failed: expected tool result part, got:",
 							ctorName
 						);
 						throw new Error(errMsg);
@@ -468,7 +468,7 @@ export async function executeWithRetry<T>(
 			}
 
 			console.warn(
-				`[OAI Compatible Model Provider] Retryable error detected, retrying in ${intervalMs}ms (attempt ${attempt}/${maxAttempts})`
+				`[Generic Compatible Model Provider] Retryable error detected, retrying in ${intervalMs}ms (attempt ${attempt}/${maxAttempts})`
 			);
 
 			// Wait for the specified interval before retrying
@@ -523,7 +523,7 @@ export function resolveModelWithProvider(model: ModelItem): ModelItem {
 	// Find the referenced provider
 	const provider = providers.find((p) => p.key === model.provider);
 	if (!provider) {
-		console.warn(`[OAI Compatible Model Provider] Provider '${model.provider}' not found in configuration`);
+		console.warn(`[Generic Compatible Model Provider] Provider '${model.provider}' not found in configuration`);
 		return model;
 	}
 

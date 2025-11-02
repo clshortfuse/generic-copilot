@@ -29,11 +29,7 @@ Heavily inspired (and then extended) by https://github.com/JohnnyZ93/oai-compati
 
 ## ⚡ Quick Start
 
-### 1. Install Extension
-
-Install the OAI Compatible Provider for Copilot extension from the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=johnny-zhao.oai-compatible-copilot).
-
-### 2. Configure Providers
+### 1. Configure Providers
 
 Open VS Code Settings (JSON) and add your provider configuration:
 
@@ -81,7 +77,7 @@ Open VS Code Settings (JSON) and add your provider configuration:
 ### 3. Set API Keys
 
 1. Open Command Palette (`Ctrl+Shift+P` or `Cmd+Shift+P`)
-2. Run: **"GenericCopilot: Set OAI Compatible Multi-Provider Apikey"**
+2. Run: **"GenericCopilot: Set Generic Compatible Multi-Provider Apikey"**
 3. Select your provider (e.g., `iflow`)
 4. Enter the API key for that provider
 
@@ -92,7 +88,7 @@ Repeat for each provider. Keys are stored securely in VS Code's secret storage a
 1. Open GitHub Copilot Chat
 2. Click the model picker
 3. Select **"Manage Models..."**
-4. Choose **"OAI Compatible"** provider
+4. Choose **"Generic Compatible"** provider
 5. Select the models you want to enable
 6. Start chatting!
 
@@ -118,7 +114,7 @@ Providers are the foundation of the configuration system. Each provider defines 
     "max_tokens": 4096,
     "temperature": 0.7,
     "top_p": 1,
-    "family": "oai-compatible",
+    "family": "generic",
     // ... any model parameter
   }
 }
@@ -257,7 +253,7 @@ Each provider has its own API key stored securely:
 **Via Command Palette:**
 
 1. `Ctrl+Shift+P` (or `Cmd+Shift+P`)
-2. **"GenericCopilot: Set OAI Compatible Multi-Provider Apikey"**
+2. **"GenericCopilot: Set Generic Compatible Multi-Provider Apikey"**
 3. Select provider from list
 4. Enter API key (or clear by leaving empty)
 
@@ -428,7 +424,7 @@ Add fixed delay between consecutive requests:
 | `configId` | string | — | Optional config ID for multiple variants |
 | `baseUrl` | string | inherited | Override provider's baseUrl |
 | `headers` | object | inherited | Merge with provider headers |
-| `family` | string | `"oai-compatible"` | Model family (gpt-4, claude-3, etc.) |
+| `family` | string | `"generic"` | Model family (gpt-4, claude-3, etc.) |
 | `context_length` | number | `128000` | Maximum context window |
 | `max_tokens` | number | `4096` | Maximum output tokens |
 | `max_completion_tokens` | number | — | OpenAI standard max output |
@@ -534,18 +530,7 @@ Use `configId` to disambiguate models with the same `id`:
 
 ---
 
-## 🙏 Thanks
 
-Thanks to all contributors and the following projects:
+## 📄 License
 
-- [Contributors](https://github.com/JohnnyZ93/oai-compatible-copilot/graphs/contributors)
-- [Hugging Face Chat Extension](https://github.com/huggingface/huggingface-vscode-chat)
-- [VS Code Chat Provider API](https://code.visualstudio.com/api/extension-guides/ai/language-model-chat-provider)
-
----
-
-## 📄 License & Support
-
-- **License**: MIT License Copyright (c) 2025 Johnny Zhao
-- **Issues**: https://github.com/JohnnyZ93/oai-compatible-copilot/issues
-- **Repository**: https://github.com/JohnnyZ93/oai-compatible-copilot
+- **License**: MIT License Copyright (c) 2025

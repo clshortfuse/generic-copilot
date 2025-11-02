@@ -98,7 +98,7 @@ export interface ModelItem {
 	 * Optional family specification for the model. This allows users to specify
 	 * the model family (e.g., "gpt-4", "claude-3", "gemini") to enable family-specific
 	 * optimizations and behaviors in the Copilot extension. If not specified,
-	 * defaults to "oai-compatible".
+	 * defaults to "generic".
 	 */
 	family?: string;
 
@@ -124,7 +124,7 @@ export interface ReasoningConfig {
  * Supplemental model info from the Hugging Face hub API.
  */
 // Deprecated: extra model info was previously fetched from the hub API
-export interface HFExtraModelInfo {
+export interface ExtraModelInfo {
 	id: string;
 	pipeline_tag?: string;
 }
@@ -132,7 +132,7 @@ export interface HFExtraModelInfo {
 /**
  * Response envelope for the router models listing.
  */
-export interface HFModelsResponse {
+export interface ModelsResponse {
 	object: string;
 	data: ModelItem[];
 }

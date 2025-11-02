@@ -5,12 +5,11 @@ import { resolveModelWithProvider } from "./utils";
 
 export function activate(context: vscode.ExtensionContext) {
 	// Build a descriptive User-Agent to help quantify API usage
-	const ext = vscode.extensions.getExtension("johnny-zhao.oai-compatible-copilot");
+	const ext = vscode.extensions.getExtension("generic-copilot-providers");
 	const extVersion = ext?.packageJSON?.version ?? "unknown";
 	const vscodeVersion = vscode.version;
 	// Keep UA minimal: only extension version and VS Code version
-	const ua = `oai-compatible-copilot/${extVersion} VSCode/${vscodeVersion}`;
-
+	const ua = `generic-copilot/${extVersion} VSCode/${vscodeVersion}`;
 	const provider = new HuggingFaceChatModelProvider(context.secrets, ua);
 	// Register the Hugging Face provider under the vendor id used in package.json
 	vscode.lm.registerLanguageModelChatProvider("generic-copilot", provider);
@@ -20,8 +19,8 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.commands.registerCommand("generic-copilot.setApikey", async () => {
 			const existing = await context.secrets.get("generic-copilot.apiKey");
 			const apiKey = await vscode.window.showInputBox({
-				title: "OAI Compatible Provider API Key",
-				prompt: existing ? "Update your OAI Compatible API key" : "Enter your OAI Compatible API key",
+				title: "Generic Compatible Provider API Key",
+				prompt: existing ? "Update your Generic Compatible API key" : "Enter your Generic Compatible API key",
 				ignoreFocusOut: true,
 				password: true,
 				value: existing ?? "",
@@ -31,11 +30,11 @@ export function activate(context: vscode.ExtensionContext) {
 			}
 			if (!apiKey.trim()) {
 				await context.secrets.delete("generic-copilot.apiKey");
-				vscode.window.showInformationMessage("OAI Compatible API key cleared.");
+				vscode.window.showInformationMessage("Generic Compatible API key cleared.");
 				return;
 			}
 			await context.secrets.store("generic-copilot.apiKey", apiKey.trim());
-			vscode.window.showInformationMessage("OAI Compatible API key saved.");
+			vscode.window.showInformationMessage("Generic Compatible API key saved.");
 		})
 	);
 
@@ -89,7 +88,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 			// Prompt for API key
 			const apiKey = await vscode.window.showInputBox({
-				title: `OAI Compatible API Key for ${selectedProvider}`,
+				title: `Generic Compatible API Key for ${selectedProvider}`,
 				prompt: existing ? `Update API key for ${selectedProvider}` : `Enter API key for ${selectedProvider}`,
 				ignoreFocusOut: true,
 				password: true,

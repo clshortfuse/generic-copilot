@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import { CancellationToken, LanguageModelChatInformation } from "vscode";
 
-import type { ModelItem, HFModelsResponse } from "./types";
+import type { ModelItem, ModelsResponse } from "./types";
 import { resolveModelWithProvider } from "./utils";
 
 const DEFAULT_CONTEXT_LENGTH = 128000;
@@ -46,7 +46,7 @@ export async function prepareLanguageModelChatInformation(
 				tooltip: resolved.configId
 				? `${resolved.owned_by}/${resolved.id}::${resolved.configId}`
 				: `${resolved.owned_by}/${resolved.id}`,
-				family: resolved.family ?? "oai-compatible",
+				family: resolved.family ?? "generic",
 				version: "1.0.0",
 				maxInputTokens: maxInput,
 				maxOutputTokens: maxOutput,
@@ -63,7 +63,7 @@ export async function prepareLanguageModelChatInformation(
 			if (options.silent) {
 				return [];
 			} else {
-				throw new Error("OAI Compatible API key not found");
+				throw new Error("Generic Compatible API key not found");
 			}
 		}
 		const { models } = await fetchModels(apiKey, userAgent);
@@ -85,7 +85,7 @@ export async function prepareLanguageModelChatInformation(
 				id: `${p.provider}/${m.id}`,
 				name: `${p.provider}/${m.id}`,
 				tooltip: `${p.provider}/${m.id}`,
-					family: m.family ?? "oai-compatible",
+					family: m.family ?? "generic",
 					version: "1.0.0",
 					maxInputTokens: maxInput,
 					maxOutputTokens: maxOutput,
@@ -101,12 +101,12 @@ export async function prepareLanguageModelChatInformation(
 				const contextLen = base?.context_length ?? DEFAULT_CONTEXT_LENGTH;
 				const maxOutput = DEFAULT_MAX_TOKENS;
 				const maxInput = Math.max(1, contextLen - maxOutput);
-				const providerName = base?.provider ?? "oai-compatible";
+				const providerName = base?.provider ?? "generic";
 				entries.push({
 				id: `${providerName}/${m.id}`,
 				name: `${providerName}/${m.id}`,
 				tooltip: `${providerName}/${m.id}`,
-					family: m.family ?? "oai-compatible",
+					family: m.family ?? "generic",
 					version: "1.0.0",
 					maxInputTokens: maxInput,
 					maxOutputTokens: maxOutput,
@@ -122,7 +122,7 @@ export async function prepareLanguageModelChatInformation(
 	}
 
 	// debug log
-	// console.log("[OAI Compatible Model Provider] Loaded models:", infos);
+	// console.log("[Generic Compatible Model Provider] Loaded models:", infos);
 	return infos;
 }
 
@@ -146,15 +146,15 @@ async function fetchModels(apiKey: string, userAgent: string): Promise<{ models:
 			try {
 				text = await resp.text();
 			} catch (error) {
-				console.error("[OAI Compatible Model Provider] Failed to read response text", error);
+				console.error("[Generic Compatible Model Provider] Failed to read response text", error);
 			}
 			const err = new Error(
-				`Failed to fetch OAI Compatible models: ${resp.status} ${resp.statusText}${text ? `\n${text}` : ""}`
+				`Failed to fetch Generic Compatible models: ${resp.status} ${resp.statusText}${text ? `\n${text}` : ""}`
 			);
-			console.error("[OAI Compatible Model Provider] Failed to fetch OAI Compatible models", err);
+			console.error("[Generic Compatible Model Provider] Failed to fetch Generic Compatible models", err);
 			throw err;
 		}
-		const parsed = (await resp.json()) as HFModelsResponse;
+		const parsed = (await resp.json()) as ModelsResponse;
 		return parsed.data ?? [];
 	})();
 
@@ -162,7 +162,7 @@ async function fetchModels(apiKey: string, userAgent: string): Promise<{ models:
 		const models = await modelsList;
 		return { models };
 	} catch (err) {
-		console.error("[OAI Compatible Model Provider] Failed to fetch OAI Compatible models", err);
+		console.error("[Generic Compatible Model Provider] Failed to fetch Generic Compatible models", err);
 		throw err;
 	}
 }
@@ -178,8 +178,8 @@ async function ensureApiKey(silent: boolean, secrets: vscode.SecretStorage): Pro
 
 	if (!apiKey && !silent) {
 		const entered = await vscode.window.showInputBox({
-			title: "OAI Compatible API Key",
-			prompt: "Enter your OAI Compatible API key",
+			title: "Generic Compatible API Key",
+			prompt: "Enter your Generic Compatible API key",
 			ignoreFocusOut: true,
 			password: true,
 		});

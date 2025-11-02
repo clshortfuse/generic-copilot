@@ -1,8 +1,8 @@
 {
 	"name": "generic-copilot-providers",
 	"publisher": "mcowger",
-	"displayName": "OAI Compatible Provider for Copilot",
-	"description": "An extension that integrates Openai Compatible Inference Providers into GitHub Copilot Chat",
+	"displayName": "Generic Provider for Copilot",
+	"description": "An extension that integrates OpenAI Compatible Inference Providers into GitHub Copilot Chat",
 	"icon": "assets/logo.png",
 	"keywords": [
 		"ai",
@@ -36,27 +36,23 @@
 		"languageModelChatProviders": [
 			{
 				"vendor": "generic-copilot",
-				"displayName": "OAI Compatible",
-				"managementCommand": "generic-copilot.setApikey"
+				"displayName": "Generic Compatible",
+				"managementCommand": "generic-copilot.setProviderApikey"
 			}
 		],
 		"commands": [
 			{
-				"command": "generic-copilot.setApikey",
-				"title": "GenericCopilot: Set OAI Compatible Apikey"
-			},
-			{
 				"command": "generic-copilot.setProviderApikey",
-				"title": "GenericCopilot: Set OAI Compatible Multi-Provider Apikey"
+				"title": "GenericCopilot: Set Generic Compatible Multi-Provider Apikey"
 			}
 		],
 		"configuration": {
-			"title": "OAI Compatible Copilot",
+			"title": "Generic Compatible Copilot",
 			"properties": {
 				"generic-copilot.baseUrl": {
 					"type": "string",
 					"default": "https://router.huggingface.co/v1",
-					"description": "The base URL for the Openai Compatible Inference API. Default value is Hugging Face."
+					"description": "The base URL for the OpenAI Compatible Inference API. Default value is Hugging Face."
 				},
 				"generic-copilot.providers": {
 					"type": "array",
@@ -192,7 +188,7 @@
 							},
 							"family": {
 								"type": "string",
-								"description": "Model family (e.g., 'gpt-4', 'claude-3', 'gemini'). Enables model-specific optimizations and behaviors. Defaults to 'oai-compatible' if not specified."
+								"description": "Model family (e.g., 'gpt-4', 'claude-3', 'gemini'). Enables model-specific optimizations and behaviors. Defaults to 'generic' if not specified."
 							},
 							"baseUrl": {
 								"type": "string",

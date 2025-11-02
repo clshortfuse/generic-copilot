@@ -167,7 +167,7 @@ export class HuggingFaceChatModelProvider implements LanguageModelChatProvider {
 				try {
 					progress.report(part);
 				} catch (e) {
-					console.error("[OAI Compatible Model Provider] Progress.report failed", {
+					console.error("[Generic Compatible Model Provider] Progress.report failed", {
 						modelId: model.id,
 						error: e instanceof Error ? { name: e.name, message: e.message } : String(e),
 					});
@@ -212,7 +212,7 @@ export class HuggingFaceChatModelProvider implements LanguageModelChatProvider {
 			const useGenericKey = !resolvedModel?.baseUrl;
 			const modelApiKey = await this.ensureApiKey(useGenericKey, provider);
 			if (!modelApiKey) {
-				throw new Error("OAI Compatible API key not found");
+				throw new Error("Generic Compatible API key not found");
 			}
 
 			// requestBody
@@ -225,7 +225,7 @@ export class HuggingFaceChatModelProvider implements LanguageModelChatProvider {
 			requestBody = this.prepareRequestBody(requestBody, resolvedModel, options);
 
 			// debug log
-			// console.log("[OAI Compatible Model Provider] RequestBody:", JSON.stringify(requestBody));
+			// console.log("[Generic Compatible Model Provider] RequestBody:", JSON.stringify(requestBody));
 
 			// send chat request
 			const BASE_URL = resolvedModel?.baseUrl || config.get<string>("generic-copilot.baseUrl", "");
@@ -251,9 +251,9 @@ export class HuggingFaceChatModelProvider implements LanguageModelChatProvider {
 
 					if (!res.ok) {
 						const errorText = await res.text();
-						console.error("[OAI Compatible Model Provider] OAI Compatible API error response", errorText);
+						console.error("[Generic Compatible Model Provider] Generic Compatible API error response", errorText);
 						throw new Error(
-							`OAI Compatible API error: [${res.status}] ${res.statusText}${errorText ? `\n${errorText}` : ""}`
+							`Generic Compatible API error: [${res.status}] ${res.statusText}${errorText ? `\n${errorText}` : ""}`
 						);
 					}
 
@@ -264,11 +264,11 @@ export class HuggingFaceChatModelProvider implements LanguageModelChatProvider {
 			);
 
 			if (!response.body) {
-				throw new Error("No response body from OAI Compatible API");
+				throw new Error("No response body from Generic Compatible API");
 			}
 			await this.processStreamingResponse(response.body, trackingProgress, token);
 		} catch (err) {
-			console.error("[OAI Compatible Model Provider] Chat request failed", {
+			console.error("[Generic Compatible Model Provider] Chat request failed", {
 				modelId: model.id,
 				messageCount: messages.length,
 				error: err instanceof Error ? { name: err.name, message: err.message } : String(err),
@@ -417,8 +417,8 @@ export class HuggingFaceChatModelProvider implements LanguageModelChatProvider {
 
 			if (!apiKey && !useGenericKey) {
 				const entered = await vscode.window.showInputBox({
-					title: `OAI Compatible API Key for ${normalizedProvider}`,
-					prompt: `Enter your OAI Compatible API key for ${normalizedProvider}`,
+					title: `Generic Compatible API Key for ${normalizedProvider}`,
+					prompt: `Enter your Generic Compatible API key for ${normalizedProvider}`,
 					ignoreFocusOut: true,
 					password: true,
 				});
@@ -436,8 +436,8 @@ export class HuggingFaceChatModelProvider implements LanguageModelChatProvider {
 
 		if (!apiKey && useGenericKey) {
 			const entered = await vscode.window.showInputBox({
-				title: "OAI Compatible API Key",
-				prompt: "Enter your OAI Compatible API key",
+				title: "Generic Compatible API Key",
+				prompt: "Enter your Generic Compatible API key",
 				ignoreFocusOut: true,
 				password: true,
 			});
@@ -492,7 +492,7 @@ export class HuggingFaceChatModelProvider implements LanguageModelChatProvider {
 						const parsed = JSON.parse(data);
 
 						// debug log
-						// console.log("[OAI Compatible Model Provider] Chunk Data:", parsed);
+						// console.log("[Generic Compatible Model Provider] Chunk Data:", parsed);
 
 						await this.processDelta(parsed, progress);
 					} catch {
@@ -602,7 +602,7 @@ export class HuggingFaceChatModelProvider implements LanguageModelChatProvider {
 				}
 			}
 		} catch (e) {
-			console.warn("[OAI Compatible Model Provider] Failed to process thinking/reasoning_details:", e);
+			console.warn("[Generic Compatible Model Provider] Failed to process thinking/reasoning_details:", e);
 		}
 
 		if (deltaObj?.content) {
@@ -622,7 +622,7 @@ export class HuggingFaceChatModelProvider implements LanguageModelChatProvider {
 						// End the current thinking sequence with empty content and same ID
 						progress.report(new vscode.LanguageModelThinkingPart("", this._currentThinkingId));
 					} catch (e) {
-						console.warn("[OAI Compatible Model Provider] Failed to end thinking sequence:", e);
+						console.warn("[Generic Compatible Model Provider] Failed to end thinking sequence:", e);
 					} finally {
 						this._currentThinkingId = null;
 					}
@@ -792,7 +792,7 @@ export class HuggingFaceChatModelProvider implements LanguageModelChatProvider {
 			const parsed = tryParseJSONObject(buf.args);
 			if (!parsed.ok) {
 				if (throwOnInvalid) {
-					console.error("[OAI Compatible Model Provider] Invalid JSON for tool call", {
+					console.error("[Generic Compatible Model Provider] Invalid JSON for tool call", {
 						idx,
 						snippet: (buf.args || "").slice(0, 200),
 					});
