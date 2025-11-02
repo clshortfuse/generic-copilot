@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { TextDecoder } from "util";
 import type { ModelItem, ProviderConfig } from "./types";
 
 export class ConfigurationPanel {
@@ -22,7 +23,10 @@ export class ConfigurationPanel {
 			{
 				enableScripts: true,
 				retainContextWhenHidden: true,
-				localResourceRoots: [vscode.Uri.joinPath(extensionUri, "out")],
+				localResourceRoots: [
+					vscode.Uri.joinPath(extensionUri, "out"),
+					vscode.Uri.joinPath(extensionUri, "assets"),
+				],
 			}
 		);
 
@@ -33,17 +37,24 @@ export class ConfigurationPanel {
 		this._panel = panel;
 		this._extensionUri = extensionUri;
 
+		console.log("[ConfigurationPanel] Initializing configuration panel");
 		this._update();
 
 		this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
 
 		this._panel.webview.onDidReceiveMessage(
 			async (message) => {
+				console.log("[ConfigurationPanel] Received message from webview:", message);
 				switch (message.command) {
 					case "save":
+						console.log("[ConfigurationPanel] Handling save command", {
+							providersCount: Array.isArray(message.providers) ? message.providers.length : "n/a",
+							modelsCount: Array.isArray(message.models) ? message.models.length : "n/a",
+						});
 						await this._saveConfiguration(message.providers, message.models);
 						return;
 					case "load":
+						console.log("[ConfigurationPanel] Handling load command from webview");
 						await this._sendConfiguration();
 						return;
 				}
@@ -55,6 +66,10 @@ export class ConfigurationPanel {
 
 	private async _saveConfiguration(providers: ProviderConfig[], models: ModelItem[]) {
 		try {
+			console.log("[ConfigurationPanel] _saveConfiguration called", {
+				providers,
+				models,
+			});
 			const config = vscode.workspace.getConfiguration();
 			await config.update("generic-copilot.providers", providers, vscode.ConfigurationTarget.Global);
 			await config.update("generic-copilot.models", models, vscode.ConfigurationTarget.Global);
@@ -64,6 +79,7 @@ export class ConfigurationPanel {
 			// Send the updated configuration back to the webview
 			await this._sendConfiguration();
 		} catch (error) {
+			console.error("[ConfigurationPanel] Failed to save configuration", error);
 			vscode.window.showErrorMessage(`Failed to save configuration: ${error}`);
 		}
 	}
@@ -72,6 +88,11 @@ export class ConfigurationPanel {
 		const config = vscode.workspace.getConfiguration();
 		const providers = config.get<ProviderConfig[]>("generic-copilot.providers", []);
 		const models = config.get<ModelItem[]>("generic-copilot.models", []);
+
+		console.log("[ConfigurationPanel] Sending configuration to webview", {
+			providersCount: providers.length,
+			modelsCount: models.length,
+		});
 
 		this._panel.webview.postMessage({
 			command: "loadConfiguration",
@@ -93,12 +114,29 @@ export class ConfigurationPanel {
 		}
 	}
 
-	private _update() {
+	private async _update() {
 		const webview = this._panel.webview;
-		this._panel.webview.html = this._getHtmlForWebview(webview);
+		this._panel.webview.html = await this._getHtmlFromAssets(webview);
 	}
 
-	private _getHtmlForWebview(webview: vscode.Webview) {
+	private async _getHtmlFromAssets(webview: vscode.Webview) {
+		const nonce = getNonce();
+		const assetsRoot = vscode.Uri.joinPath(this._extensionUri, "assets", "webview");
+		const htmlPath = vscode.Uri.joinPath(assetsRoot, "config.html");
+		const styleUri = webview.asWebviewUri(vscode.Uri.joinPath(assetsRoot, "config.css"));
+		const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(assetsRoot, "config.js"));
+
+		const raw = await vscode.workspace.fs.readFile(htmlPath);
+		let html = new TextDecoder("utf-8").decode(raw);
+		html = html
+			.replaceAll("%CSP_SOURCE%", webview.cspSource)
+			.replaceAll("%NONCE%", nonce)
+			.replace("%STYLE_URI%", styleUri.toString())
+			.replace("%SCRIPT_URI%", scriptUri.toString());
+		return html;
+	}
+
+	private async _getHtmlForWebview(webview: vscode.Webview) {
 		const nonce = getNonce();
 
 		return `<!DOCTYPE html>
@@ -114,19 +152,19 @@ export class ConfigurationPanel {
 			color: var(--vscode-foreground);
 			font-family: var(--vscode-font-family);
 		}
-		
+
 		h1, h2 {
 			margin-top: 0;
 		}
-		
+
 		.section {
 			margin-bottom: 30px;
 		}
-		
+
 		.item-list {
 			margin-bottom: 20px;
 		}
-		
+
 		.item {
 			background-color: var(--vscode-editor-background);
 			border: 1px solid var(--vscode-panel-border);
@@ -134,24 +172,24 @@ export class ConfigurationPanel {
 			padding: 15px;
 			margin-bottom: 10px;
 		}
-		
+
 		.item-header {
 			display: flex;
 			justify-content: space-between;
 			align-items: center;
 			margin-bottom: 10px;
 		}
-		
+
 		.item-header h3 {
 			margin: 0;
 			font-size: 1.1em;
 		}
-		
+
 		.item-actions {
 			display: flex;
 			gap: 5px;
 		}
-		
+
 		button {
 			background-color: var(--vscode-button-background);
 			color: var(--vscode-button-foreground);
@@ -160,30 +198,30 @@ export class ConfigurationPanel {
 			cursor: pointer;
 			border-radius: 2px;
 		}
-		
+
 		button:hover {
 			background-color: var(--vscode-button-hoverBackground);
 		}
-		
+
 		button.secondary {
 			background-color: var(--vscode-button-secondaryBackground);
 			color: var(--vscode-button-secondaryForeground);
 		}
-		
+
 		button.secondary:hover {
 			background-color: var(--vscode-button-secondaryHoverBackground);
 		}
-		
+
 		.form-group {
 			margin-bottom: 12px;
 		}
-		
+
 		label {
 			display: block;
 			margin-bottom: 4px;
 			font-weight: 500;
 		}
-		
+
 		input[type="text"],
 		input[type="number"],
 		select,
@@ -196,20 +234,20 @@ export class ConfigurationPanel {
 			border-radius: 2px;
 			box-sizing: border-box;
 		}
-		
+
 		input[type="checkbox"] {
 			margin-right: 5px;
 		}
-		
+
 		.checkbox-label {
 			display: flex;
 			align-items: center;
 		}
-		
+
 		.add-button {
 			margin-bottom: 15px;
 		}
-		
+
 		.save-section {
 			position: sticky;
 			bottom: 0;
@@ -217,7 +255,7 @@ export class ConfigurationPanel {
 			padding: 15px 0;
 			border-top: 1px solid var(--vscode-panel-border);
 		}
-		
+
 		.empty-state {
 			padding: 20px;
 			text-align: center;
@@ -226,11 +264,11 @@ export class ConfigurationPanel {
 			border: 1px dashed var(--vscode-panel-border);
 			border-radius: 4px;
 		}
-		
+
 		.collapsible-content {
 			margin-top: 10px;
 		}
-		
+
 		.error {
 			color: var(--vscode-errorForeground);
 			font-size: 0.9em;
@@ -240,46 +278,64 @@ export class ConfigurationPanel {
 </head>
 <body>
 	<h1>Generic Copilot Configuration</h1>
-	
+
 	<div class="section">
 		<h2>Providers</h2>
 		<button class="add-button" onclick="addProvider()">+ Add Provider</button>
 		<div id="providers-list" class="item-list"></div>
 	</div>
-	
+
 	<div class="section">
 		<h2>Models</h2>
 		<button class="add-button" onclick="addModel()">+ Add Model</button>
 		<div id="models-list" class="item-list"></div>
 	</div>
-	
+
 	<div class="save-section">
 		<button onclick="saveConfiguration()">Save Configuration</button>
 	</div>
 
 	<script nonce="${nonce}">
 		const vscode = acquireVsCodeApi();
-		
+		console.log('[ConfigWebview] Script loaded');
+
 		let providers = [];
 		let models = [];
-		
+
+		// Global click listener for diagnostics
+		document.addEventListener('click', (e) => {
+			const target = e.target;
+			if (!target) { return; }
+			const btn = (target as any).closest ? (target as any).closest('button') : null;
+			if (btn) {
+				console.log('[ConfigWebview] Button click', {
+					text: btn.innerText,
+					classes: btn.className,
+				});
+			}
+		});
+
 		// Request initial configuration
+		console.log('[ConfigWebview] Posting load request to extension');
 		vscode.postMessage({ command: 'load' });
-		
+
 		// Listen for messages from the extension
 		window.addEventListener('message', event => {
 			const message = event.data;
+			console.log('[ConfigWebview] Received message from extension', message?.command, message);
 			switch (message.command) {
 				case 'loadConfiguration':
 					providers = message.providers || [];
 					models = message.models || [];
+					console.log('[ConfigWebview] Loaded configuration', { providersCount: providers.length, modelsCount: models.length });
 					renderProviders();
 					renderModels();
 					break;
 			}
 		});
-		
+
 		function addProvider() {
+			console.log('[ConfigWebview] addProvider called');
 			const newProvider = {
 				key: '',
 				baseUrl: '',
@@ -287,37 +343,43 @@ export class ConfigurationPanel {
 				defaults: {}
 			};
 			providers.push(newProvider);
+			console.log('[ConfigWebview] providers length after add:', providers.length);
 			renderProviders();
 		}
-		
+
 		function removeProvider(index) {
+			console.log('[ConfigWebview] removeProvider called', { index });
 			providers.splice(index, 1);
 			renderProviders();
 		}
-		
+
 		function addModel() {
+			console.log('[ConfigWebview] addModel called');
 			const newModel = {
 				id: '',
 				provider: '',
 				owned_by: ''
 			};
 			models.push(newModel);
+			console.log('[ConfigWebview] models length after add:', models.length);
 			renderModels();
 		}
-		
+
 		function removeModel(index) {
+			console.log('[ConfigWebview] removeModel called', { index });
 			models.splice(index, 1);
 			renderModels();
 		}
-		
+
 		function renderProviders() {
 			const container = document.getElementById('providers-list');
-			
+			console.log('[ConfigWebview] renderProviders', { count: providers.length });
+
 			if (providers.length === 0) {
 				container.innerHTML = '<div class="empty-state">No providers configured. Click "Add Provider" to get started.</div>';
 				return;
 			}
-			
+
 			container.innerHTML = providers.map((provider, index) => {
 				let defaultsHtml = '';
 				if (provider.defaults) {
@@ -357,7 +419,7 @@ export class ConfigurationPanel {
 						'</div>' +
 					'</div>';
 				}
-				
+
 				return '<div class="item">' +
 					'<div class="item-header">' +
 						'<h3>Provider ' + (index + 1) + '</h3>' +
@@ -401,19 +463,20 @@ export class ConfigurationPanel {
 				'</div>';
 			}).join('');
 		}
-		
+
 		function renderModels() {
 			const container = document.getElementById('models-list');
-			
+			console.log('[ConfigWebview] renderModels', { count: models.length });
+
 			if (models.length === 0) {
 				container.innerHTML = '<div class="empty-state">No models configured. Click "Add Model" to get started.</div>';
 				return;
 			}
-			
-			const providerOptions = providers.map(p => 
+
+			const providerOptions = providers.map(p =>
 				'<option value="' + p.key + '">' + (p.displayName || p.key) + '</option>'
 			).join('');
-			
+
 			container.innerHTML = models.map((model, index) => {
 				return '<div class="item">' +
 					'<div class="item-header">' +
@@ -495,7 +558,7 @@ export class ConfigurationPanel {
 					'</div>' +
 				'</div>';
 			}).join('');
-			
+
 			// Set selected provider values
 			models.forEach((model, index) => {
 				if (model.provider) {
@@ -506,11 +569,12 @@ export class ConfigurationPanel {
 				}
 			});
 		}
-		
+
 		function updateProvider(index, field, value) {
+			console.log('[ConfigWebview] updateProvider', { index, field, value });
 			providers[index][field] = value;
 		}
-		
+
 		function updateProviderHeaders(index, value) {
 			try {
 				if (value.trim() === '') {
@@ -520,11 +584,12 @@ export class ConfigurationPanel {
 				}
 			} catch (e) {
 				// Invalid JSON, keep the old value or ignore
-				console.error('Invalid JSON for headers:', e);
+				console.error('[ConfigWebview] Invalid JSON for headers:', e);
 			}
 		}
-		
+
 		function updateProviderDefault(index, field, value) {
+			console.log('[ConfigWebview] updateProviderDefault', { index, field, value });
 			if (!providers[index].defaults) {
 				providers[index].defaults = {};
 			}
@@ -534,8 +599,9 @@ export class ConfigurationPanel {
 				providers[index].defaults[field] = value;
 			}
 		}
-		
+
 		function toggleProviderDefaults(index, enabled) {
+			console.log('[ConfigWebview] toggleProviderDefaults', { index, enabled });
 			if (enabled) {
 				providers[index].defaults = {};
 			} else {
@@ -543,30 +609,32 @@ export class ConfigurationPanel {
 			}
 			renderProviders();
 		}
-		
+
 		function updateModel(index, field, value) {
+			console.log('[ConfigWebview] updateModel', { index, field, value });
 			if (value === '' || (typeof value === 'number' && isNaN(value))) {
 				delete models[index][field];
 			} else {
 				models[index][field] = value;
 			}
 		}
-		
+
 		function saveConfiguration() {
+			console.log('[ConfigWebview] saveConfiguration called', { providersCount: providers.length, modelsCount: models.length });
 			// Validate providers
 			const invalidProviders = providers.filter(p => !p.key || !p.baseUrl);
 			if (invalidProviders.length > 0) {
 				alert('Please fill in required fields (key and baseUrl) for all providers.');
 				return;
 			}
-			
+
 			// Validate models
 			const invalidModels = models.filter(m => !m.id);
 			if (invalidModels.length > 0) {
 				alert('Please fill in required field (id) for all models.');
 				return;
 			}
-			
+
 			// Clean up empty defaults
 			const cleanProviders = providers.map(p => {
 				const cleaned = { ...p };
@@ -575,7 +643,8 @@ export class ConfigurationPanel {
 				}
 				return cleaned;
 			});
-			
+
+			console.log('[ConfigWebview] Posting save to extension', { cleanProviders, models });
 			vscode.postMessage({
 				command: 'save',
 				providers: cleanProviders,
