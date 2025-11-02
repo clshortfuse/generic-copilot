@@ -28,6 +28,16 @@ suite("Extension Integration Test Suite", () => {
 			assert.strictEqual(pkg.name, "generic-copilot-providers");
 			assert.ok(pkg.version);
 		});
+
+		test("should register openConfiguration command", async () => {
+			const commands = await vscode.commands.getCommands(true);
+			assert.ok(commands.includes("generic-copilot.openConfiguration"));
+		});
+
+		test("should register setProviderApikey command", async () => {
+			const commands = await vscode.commands.getCommands(true);
+			assert.ok(commands.includes("generic-copilot.setProviderApikey"));
+		});
 	});
 
 	suite("Configuration", () => {

@@ -8,6 +8,7 @@ Heavily inspired (and then extended) by https://github.com/JohnnyZ93/oai-compati
 
 ## ✨ Features
 
+- **Configuration GUI**: Intuitive webview-based interface for managing providers and models with validation and error handling
 - **Provider-First Configuration**: Define providers once with shared settings, then add models that automatically inherit baseUrl, headers, and defaults
 - **Multiple Provider Support**: Manage API keys for unlimited providers with automatic per-provider key storage
 - **Inheritable Defaults**: Set common parameters (temperature, max_tokens, etc.) at the provider level and override per-model as needed
@@ -28,6 +29,29 @@ Heavily inspired (and then extended) by https://github.com/JohnnyZ93/oai-compati
 ---
 
 ## ⚡ Quick Start
+
+### Option A: Using the Configuration GUI (Recommended)
+
+1. **Open Configuration GUI**:
+   - Press `Ctrl+Shift+P` (Windows/Linux) or `Cmd+Shift+P` (macOS)
+   - Type "GenericCopilot: Open Configuration GUI"
+   - Press Enter
+
+2. **Add Providers**:
+   - Click "+ Add Provider"
+   - Enter provider key (e.g., "iflow") and base URL
+   - Optionally configure default parameters
+
+3. **Add Models**:
+   - Click "+ Add Model"
+   - Enter model ID and select a provider
+   - Configure model-specific settings as needed
+
+4. **Save**: Click "Save Configuration" button
+
+For detailed instructions, see [CONFIGURATION_GUI.md](CONFIGURATION_GUI.md).
+
+### Option B: Manual Configuration (JSON)
 
 ### 1. Configure Providers
 
@@ -74,7 +98,7 @@ Open VS Code Settings (JSON) and add your provider configuration:
 }
 ```
 
-### 3. Set API Keys
+### 2. Set API Keys
 
 1. Open Command Palette (`Ctrl+Shift+P` or `Cmd+Shift+P`)
 2. Run: **"GenericCopilot: Set Generic Compatible Multi-Provider Apikey"**
@@ -83,7 +107,7 @@ Open VS Code Settings (JSON) and add your provider configuration:
 
 Repeat for each provider. Keys are stored securely in VS Code's secret storage as `generic-copilot.apiKey.<provider-key>`.
 
-### 4. Use in Copilot Chat
+### 3. Use in Copilot Chat
 
 1. Open GitHub Copilot Chat
 2. Click the model picker
