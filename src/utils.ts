@@ -7,6 +7,8 @@ import type {
 	RetryConfig,
 	ProviderConfig,
 	ModelItem,
+	ModelParameters,
+	ModelProperties,
 } from "./types";
 
 const RETRY_MAX_ATTEMPTS = 3;
@@ -555,4 +557,118 @@ export function resolveModelWithProvider(model: ModelItem): ModelItem {
 	}
 
 	return resolved;
+}
+
+/**
+ * Normalize a ModelItem by converting flat structure to grouped structure.
+ * If the model already uses the grouped structure, it is returned as-is.
+ * If it uses the flat structure, it is converted to grouped structure.
+ * @param model The model configuration to normalize
+ * @returns Normalized model with grouped structure
+ */
+export function normalizeModelItem(model: ModelItem): ModelItem {
+	// If already using grouped structure, return as-is
+	if (model.model_properties || model.model_parameters) {
+		return model;
+	}
+
+	// Convert flat structure to grouped structure
+	const modelProperties: ModelProperties = {
+		id: model.id!,
+		object: model.object,
+		created: model.created,
+		displayName: model.displayName,
+		owned_by: model.owned_by!,
+		provider: model.provider,
+		configId: model.configId,
+		baseUrl: model.baseUrl,
+		providers: model.providers,
+		architecture: model.architecture,
+		context_length: model.context_length,
+		vision: model.vision,
+		family: model.family,
+		headers: model.headers,
+	};
+
+	const modelParameters: ModelParameters = {
+		temperature: model.temperature,
+		top_p: model.top_p,
+		max_tokens: model.max_tokens,
+		max_completion_tokens: model.max_completion_tokens,
+		reasoning_effort: model.reasoning_effort,
+		enable_thinking: model.enable_thinking,
+		thinking_budget: model.thinking_budget,
+		thinking: model.thinking,
+		top_k: model.top_k,
+		min_p: model.min_p,
+		frequency_penalty: model.frequency_penalty,
+		presence_penalty: model.presence_penalty,
+		repetition_penalty: model.repetition_penalty,
+		reasoning: model.reasoning,
+		extra: model.extra,
+	};
+
+	return {
+		model_properties: modelProperties,
+		model_parameters: modelParameters,
+	};
+}
+
+/**
+ * Get model properties from a ModelItem, supporting both flat and grouped structures.
+ * @param model The model configuration
+ * @returns Model properties
+ */
+export function getModelProperties(model: ModelItem): ModelProperties {
+	if (model.model_properties) {
+		return model.model_properties;
+	}
+
+	// Extract from flat structure
+	return {
+		id: model.id!,
+		object: model.object,
+		created: model.created,
+		displayName: model.displayName,
+		owned_by: model.owned_by!,
+		provider: model.provider,
+		configId: model.configId,
+		baseUrl: model.baseUrl,
+		providers: model.providers,
+		architecture: model.architecture,
+		context_length: model.context_length,
+		vision: model.vision,
+		family: model.family,
+		headers: model.headers,
+	};
+}
+
+/**
+ * Get model parameters from a ModelItem, supporting both flat and grouped structures.
+ * @param model The model configuration
+ * @returns Model parameters
+ */
+export function getModelParameters(model: ModelItem): ModelParameters {
+	if (model.model_parameters) {
+		return model.model_parameters;
+	}
+
+	// Extract from flat structure
+	return {
+		temperature: model.temperature,
+		top_p: model.top_p,
+		max_tokens: model.max_tokens,
+		max_completion_tokens: model.max_completion_tokens,
+		reasoning_effort: model.reasoning_effort,
+		enable_thinking: model.enable_thinking,
+		thinking_budget: model.thinking_budget,
+		thinking: model.thinking,
+		top_k: model.top_k,
+		min_p: model.min_p,
+		frequency_penalty: model.frequency_penalty,
+		presence_penalty: model.presence_penalty,
+		repetition_penalty: model.repetition_penalty,
+		reasoning: model.reasoning,
+		extra: model.extra,
+	};
 }
