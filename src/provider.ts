@@ -186,22 +186,39 @@ export class HuggingFaceChatModelProvider implements LanguageModelChatProvider {
 			const config = vscode.workspace.getConfiguration();
 			const userModels = config.get<ModelItem[]>("generic-copilot.models", []);
 
-			// Parse the model ID to handle a potential config ID suffix
+			// Parse the model ID to handle a potential provider prefix and config ID suffix
 			const parsedModelId = parseModelId(model.id);
+			let providerHint: string | undefined;
+			let baseIdForMatch = parsedModelId.baseId;
+			const slashIdx = baseIdForMatch.indexOf("/");
+			if (slashIdx !== -1) {
+				providerHint = baseIdForMatch.slice(0, slashIdx).toLowerCase();
+				baseIdForMatch = baseIdForMatch.slice(slashIdx + 1);
+			}
+
+			const getDeclaredProviderKey = (m: ModelItem): string | undefined =>
+				(m.provider ?? m.owned_by)?.toLowerCase();
 
 			// Find the matching user model configuration
-			// Prefer a match that has both the same base ID and the same config ID
-			// If there is no config ID, match by base ID only
-			let um: ModelItem | undefined = userModels.find(
-				(um) =>
-					um.id === parsedModelId.baseId &&
-					((parsedModelId.configId && um.configId === parsedModelId.configId) ||
-						(!parsedModelId.configId && !um.configId))
-			);
+			// Prefer match: same model id AND same configId AND (if present) same provider key
+			let um: ModelItem | undefined = userModels.find((m) => {
+				if (m.id !== baseIdForMatch) return false;
+				const configMatch = (parsedModelId.configId && m.configId === parsedModelId.configId) ||
+					(!parsedModelId.configId && !m.configId);
+				if (!configMatch) return false;
+				if (!providerHint) return true;
+				const decl = getDeclaredProviderKey(m);
+				return decl ? decl === providerHint : false;
+			});
 
-			// If still not found, try any model with the same base ID (loosest match for backward compatibility)
+			// If not found, relax provider constraint (match by id and configId only)
 			if (!um) {
-				um = userModels.find((um) => um.id === parsedModelId.baseId);
+				um = userModels.find(
+					(m) =>
+						m.id === baseIdForMatch &&
+						((parsedModelId.configId && m.configId === parsedModelId.configId) ||
+							(!parsedModelId.configId && !m.configId))
+				);
 			}
 
 			// Resolve model configuration with provider inheritance
@@ -220,7 +237,7 @@ export class HuggingFaceChatModelProvider implements LanguageModelChatProvider {
 
 			// requestBody
 			requestBody = {
-				model: parsedModelId.baseId,
+				model: baseIdForMatch,
 				messages: openaiMessages,
 				stream: true,
 				stream_options: { include_usage: true },
