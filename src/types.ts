@@ -48,7 +48,6 @@ export interface Provider {
 	context_length?: number;
 }
 
-
 export interface Architecture {
 	input_modalities?: string[];
 	output_modalities?: string[];
@@ -198,6 +197,8 @@ export interface ProviderConfig {
 	displayName?: string;
 	/** Base URL for the provider's API endpoint */
 	baseUrl: string;
+	/** Custom HTTP headers for all requests */
+	headers?: Record<string, string>;
 	/** Default parameters that models can inherit */
 	defaults?: {
 		context_length?: number;
