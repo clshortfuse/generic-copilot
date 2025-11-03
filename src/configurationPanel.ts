@@ -53,6 +53,11 @@ export class ConfigurationPanel {
 						});
 						await this._saveConfiguration(message.providers, message.models);
 						return;
+					case "openSettings":
+						console.log("[ConfigurationPanel] Handling openSettings request from webview");
+						// Ask VS Code to open the user settings.json editor
+						await vscode.commands.executeCommand('workbench.action.openSettingsJson');
+						return;
 					case "load":
 						console.log("[ConfigurationPanel] Handling load command from webview");
 						await this._sendConfiguration();
@@ -293,6 +298,7 @@ export class ConfigurationPanel {
 
 	<div class="save-section">
 		<button onclick="saveConfiguration()">Save Configuration</button>
+		<button onclick="openSettings()" class="secondary">Open settings.json</button>
 	</div>
 
 	<script nonce="${nonce}">
@@ -650,6 +656,11 @@ export class ConfigurationPanel {
 				providers: cleanProviders,
 				models: models
 			});
+		}
+
+		function openSettings() {
+			console.log('[ConfigWebview] openSettings requested');
+			vscode.postMessage({ command: 'openSettings' });
 		}
 	</script>
 </body>

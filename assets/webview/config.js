@@ -7,6 +7,7 @@
   const addProviderBtn = document.getElementById('add-provider-btn');
   const addModelBtn = document.getElementById('add-model-btn');
   const saveBtn = document.getElementById('save-config-btn');
+  const openSettingsBtn = document.getElementById('open-settings-btn');
 
   let providers = [];
   let models = [];
@@ -134,6 +135,14 @@
     console.log('[ConfigWebview] Posting save to extension', { cleanProviders, models: groupedModels });
     vscode.postMessage({ command: 'save', providers: cleanProviders, models: groupedModels });
   });
+
+  // Open settings.json in the host editor
+  if (openSettingsBtn) {
+    openSettingsBtn.addEventListener('click', () => {
+      console.log('[ConfigWebview] openSettings requested');
+      vscode.postMessage({ command: 'openSettings' });
+    });
+  }
 
   // Delegated events for providers list
   providersList.addEventListener('click', (e) => {
