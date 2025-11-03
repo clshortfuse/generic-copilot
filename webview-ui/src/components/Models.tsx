@@ -5,9 +5,9 @@ import ModelPropertiesForm from './ModelProperties';
 import ModelParamsForm from './ModelParams';
 import {
     VscodeButton,
-    VscodeDivider,
     VscodeTabs,
     VscodeTabHeader,
+    VscodeDivider,
     VscodeTabPanel,
     VscodeCollapsible,
 } from '@vscode-elements/react-elements';
@@ -84,6 +84,7 @@ const ModelItemCard: React.FC<{
                     </VscodeTabPanel>
                 </VscodeTabs>
             </VscodeCollapsible>
+            <VscodeDivider></VscodeDivider>
         </div>
     );
 };

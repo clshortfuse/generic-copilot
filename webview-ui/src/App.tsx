@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import type { ModelItem, ProviderConfig, ModelProperties, ModelParameters } from '../../src/types';
 import { Providers } from './components/Providers';
 import { Models } from './components/Models';
-import { VscodeButton, VscodeDivider, VscodeTabs, VscodeTabHeader, VscodeTabPanel } from '@vscode-elements/react-elements';
+import { VscodeButton, VscodeTabs, VscodeTabHeader, VscodeTabPanel } from '@vscode-elements/react-elements';
 
 declare function acquireVsCodeApi(): {
     postMessage: (message: any) => void;
@@ -138,7 +138,6 @@ const App: React.FC = () => {
                     zIndex: 10,
                 }}
             >
-                <VscodeDivider></VscodeDivider>
                 <div className="save-section" style={{ display: 'flex', gap: 8 }}>
                     <VscodeButton onClick={onSave} disabled={loading}>
                         Save Configuration
