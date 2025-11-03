@@ -1,92 +1,56 @@
 {
   "_comment1": "Provider-first Configuration Example",
   "_comment2": "This example demonstrates the provider-first configuration approach with grouped structure",
-  "_comment3": "that reduces duplication and simplifies multi-provider setups.",
-
+  "_comment3": "Models automatically inherit baseUrl, headers, and API key from their provider. All other parameters must be explicitly defined on each model.",
   "generic-copilot.providers": [
     {
       "key": "modelscope",
       "displayName": "ModelScope",
-      "baseUrl": "https://api-inference.modelscope.cn/v1",
-      "defaults": {
-        "model_properties": {
-          "context_length": 256000,
-          "family": "generic"
-        },
-        "model_parameters": {
-          "max_tokens": 8192,
-          "temperature": 0,
-          "top_p": 1
-        }
-      }
+      "baseUrl": "https://api-inference.modelscope.cn/v1"
     },
     {
       "key": "siliconflow",
       "displayName": "SiliconFlow",
-      "baseUrl": "https://api.siliconflow.cn/v1",
-      "defaults": {
-        "model_properties": {
-          "context_length": 128000
-        },
-        "model_parameters": {
-          "max_tokens": 4096,
-          "temperature": 0.7,
-          "top_p": 0.95
-        }
-      }
+      "baseUrl": "https://api.siliconflow.cn/v1"
     },
     {
       "key": "zai",
       "displayName": "Zai",
-      "baseUrl": "https://open.zaidata.com/v1",
-      "defaults": {
-        "model_properties": {
-          "context_length": 256000
-        },
-        "model_parameters": {
-          "max_tokens": 8192,
-          "temperature": 0.7,
-          "top_p": 1
-        }
-      }
+      "baseUrl": "https://open.zaidata.com/v1"
     },
     {
       "key": "openrouter",
       "displayName": "OpenRouter",
-      "baseUrl": "https://openrouter.ai/api/v1",
-      "defaults": {
-        "model_properties": {
-          "context_length": 200000
-        },
-        "model_parameters": {
-          "max_tokens": 4096,
-          "temperature": 0.8,
-          "reasoning": {
-            "enabled": true,
-            "effort": "medium"
-          }
-        }
-      }
+      "baseUrl": "https://openrouter.ai/api/v1"
     }
   ],
-
   "generic-copilot.models": [
     {
-      "_comment": "Model inheriting all defaults from modelscope provider",
+      "_comment": "Model with explicit parameters - inherits only baseUrl from provider",
       "model_properties": {
         "id": "Qwen/Qwen3-Coder-480B-A35B-Instruct",
-        "provider": "modelscope"
-      },
-      "model_parameters": {}
-    },
-    {
-      "_comment": "Model inheriting from modelscope but overriding temperature",
-      "model_properties": {
-        "id": "deepseek-ai/DeepSeek-V3",
-        "provider": "modelscope"
+        "provider": "modelscope",
+        "context_length": 256000,
+        "family": "generic"
       },
       "model_parameters": {
-        "temperature": 0.5
+        "max_tokens": 8192,
+        "temperature": 0,
+        "top_p": 1
+      }
+    },
+    {
+      "_comment": "Model with different parameter set",
+      "model_properties": {
+        "id": "deepseek-ai/DeepSeek-V3",
+        "provider": "modelscope",
+        "context_length": 256000,
+        "family": "generic"
+      },
+      "model_parameters": {
+        "max_tokens": 8192,
+        "temperature": 0.5,
+        "top_p": 1
       }
     },
     {
@@ -94,9 +58,13 @@
       "model_properties": {
         "id": "glm-4.6",
         "configId": "thinking",
-        "provider": "zai"
+        "provider": "zai",
+        "context_length": 256000
       },
       "model_parameters": {
+        "max_tokens": 8192,
+        "temperature": 0.7,
+        "top_p": 1,
         "thinking": {
           "type": "enabled"
         }
@@ -106,10 +74,13 @@
       "model_properties": {
         "id": "glm-4.6",
         "configId": "no-thinking",
-        "provider": "zai"
+        "provider": "zai",
+        "context_length": 256000
       },
       "model_parameters": {
+        "max_tokens": 8192,
         "temperature": 0,
+        "top_p": 1,
         "thinking": {
           "type": "disabled"
         }
@@ -119,9 +90,12 @@
       "_comment": "Model with reasoning configuration",
       "model_properties": {
         "id": "anthropic/claude-3.5-sonnet",
-        "provider": "openrouter"
+        "provider": "openrouter",
+        "context_length": 200000
       },
       "model_parameters": {
+        "max_tokens": 4096,
+        "temperature": 0.8,
         "reasoning": {
           "enabled": true,
           "effort": "high"
@@ -129,14 +103,17 @@
       }
     },
     {
-      "_comment": "Model from siliconflow with custom max_tokens",
+      "_comment": "Model from siliconflow with vision enabled",
       "model_properties": {
         "id": "Qwen/Qwen2.5-Coder-32B-Instruct",
         "provider": "siliconflow",
-        "vision": true
+        "vision": true,
+        "context_length": 128000
       },
       "model_parameters": {
-        "max_tokens": 16384
+        "max_tokens": 16384,
+        "temperature": 0.7,
+        "top_p": 0.95
       }
     },
     {
