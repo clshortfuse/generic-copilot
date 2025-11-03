@@ -186,48 +186,7 @@ Providers are the foundation of the configuration system. Each provider defines 
 
 Models reference providers and automatically inherit their settings. You can override any inherited value at the model level.
 
-#### Model Schema
-
-```json
-{
-  "id": "string",              // Required: Model identifier
-  "provider": "string",        // Required: Provider key to inherit from
-  "configId": "string",        // Optional: Create multiple configs of same model
-  "baseUrl": "string",         // Optional: Override provider's baseUrl
-  "headers": {},               // Optional: Merge with or override provider headers
-  "temperature": 0.5,          // Optional: Override any provider default
-  // ... any parameter can be overridden
-}
-```
-
-#### Example: Models with Inheritance
-
-```json
-{
-  "generic-copilot.models": [
-    {
-      "id": "Qwen/Qwen3-Coder-480B",
-      "provider": "modelscope"
-      // Inherits: baseUrl, headers, all defaults from modelscope
-    },
-    {
-      "id": "deepseek-v3",
-      "provider": "modelscope",
-      "temperature": 0.5,
-      "max_tokens": 16384
-      // Inherits from modelscope but overrides temperature and max_tokens
-    },
-    {
-      "id": "claude-3.5-sonnet",
-      "provider": "openrouter",
-      "reasoning": {
-        "effort": "high"
-      }
-      // Inherits reasoning.enabled from provider, overrides effort
-    }
-  ]
-}
-```
+We now use the grouped configuration format for models (see the "Grouped Structure" section below). Models should be defined using `model_properties` for internal metadata and `model_parameters` for fields sent to the provider. See `examples/provider-first-config.json` and `examples/grouped-config.json` for concrete samples.
 
 ### Grouped Structure
 
