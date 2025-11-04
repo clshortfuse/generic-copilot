@@ -72,256 +72,139 @@ Repeat for each provider. Keys are stored securely in VS Code's secret storage a
 
 ## 📖 Configuration Guide
 
-### Provider Configuration
+Configuration is managed in VS Code's `settings.json` file. You can either edit the JSON directly or use the Configuration GUI (`GenericCopilot: Open Configuration GUI`).
 
-Providers are the foundation of the configuration system. Each provider defines baseUrl, headers, and API key settings that are automatically inherited by their models.
+The configuration is split into two main parts: `providers` and `models`.
 
-#### Provider Schema
+### Provider Configuration (`generic-copilot.providers`)
 
-```json
-{
-  "key": "string",           // Required: Unique identifier (lowercase, used for API keys)
-  "displayName": "string",           // Optional.
-  "baseUrl": "string",       // Required: API endpoint base URL (inherited by models)
-  "headers": {               // Optional: Custom HTTP headers for all requests (inherited by models)
-    "X-Custom-Header": "value"
-  }
-}
-```
+Providers define the connection details for an API endpoint. Models reference a provider to inherit its settings.
 
-#### Example: Multiple Providers
+**Schema:**
 
-```json
-{
-  "generic-copilot.providers": [
-    {
-      "key": "modelscope",
-      "baseUrl": "https://api-inference.modelscope.cn/v1",
-      "headers": {
-        "X-Source": "vscode-extension"
-      }
-    },
-    {
-      "key": "openrouter",
-      "baseUrl": "https://openrouter.ai/api/v1"
-    },
-    {
-      "key": "zai",
-      "baseUrl": "https://open.zaidata.com/v1"
-    }
-  ]
-}
-```
+| Field         | Type     | Required | Description                                                                    |
+|---------------|----------|----------|--------------------------------------------------------------------------------|
+| `key`         | `string` | Yes      | A unique, lowercase identifier for the provider (e.g., "openrouter", "zai").   |
+| `displayName` | `string` | No       | A user-friendly name for the provider that appears in the UI.                  |
+| `baseUrl`     | `string` | Yes      | The base URL of the provider's API endpoint (e.g., "https://api.example.com/v1"). |
+| `headers`     | `object` | No       | Custom HTTP headers to be sent with every request to this provider.            |
 
-### Model Configuration
+### Model Configuration (`generic-copilot.models`)
 
-Models reference providers and automatically inherit their baseUrl, headers, and use the provider's API key. Model parameters and properties must be explicitly defined on each model.
+Models define the specific LLMs you want to use. Each model must be associated with a provider.
 
-We use a grouped configuration format for models (see the "Grouped Structure" section below). Models should be defined using `model_properties` for internal metadata and `model_parameters` for fields sent to the provider.
+**Schema:**
 
-Note: Not all options are exposed in the UI.   Extra or custom paramaters can be set with the `extra` object.
+| Field                | Type     | Required | Description                                                                                                                             |
+|----------------------|----------|----------|-----------------------------------------------------------------------------------------------------------------------------------------|
+| `id`                 | `string` | Yes      | The model identifier that will be sent to the provider's API (e.g., "anthropic/claude-3.5-sonnet").                                       |
+| `provider`           | `string` | Yes      | The `key` of a configured provider. The model will inherit `baseUrl` and `headers` from this provider.                                    |
+| `displayName`        | `string` | No       | A user-friendly name for the model. If not set, a name is generated from `id` and `configId`.                                           |
+| `configId`           | `string` | No       | An identifier to create multiple configurations for the same `id`. The final model name will be `id::configId`.                           |
+| `model_properties`   | `object` | No       | Internal metadata used by the extension to control behavior. These are **not** sent to the provider's API.                              |
+| `model_parameters`   | `object` | No       | Parameters that are sent in the body of the request to the provider's API.                                                              |
 
-#### Grouped Model Schema
+#### `model_properties` Schema
 
-```json
-{
-  "model_properties": {
-    "id": "string",              // Required: Model identifier
-    "provider": "string",        // Required: Provider key to inherit from
-    "configId": "string",        // Optional: Create multiple configs
-    "owned_by": "string",        // Provider name (inherited from provider)
-    "baseUrl": "string",         // API endpoint (inherited from provider)
-    "context_length": 128000,    // Context window size
-    "family": "generic"          // Model family - models are treated differently by copilot based on family.
-  },
-  "model_parameters": {
-    "temperature": 0.7,          // Sampling temperature
-    "max_tokens": 4096,          // Maximum output tokens
-    "extra": {                   // Unknown keys allowed here
-      "custom_param": "value"
-    }
-  }
-}
-```
+| Field            | Type     | Description                                                                                             |
+|------------------|----------|---------------------------------------------------------------------------------------------------------|
+| `context_length` | `number` | The maximum context window size for the model. Defaults to `128000`.                                    |
+| `owned_by`       | `string` | The provider name. This is typically inherited from the provider's `key` and doesn't need to be set manually. |
+| `family`         | `string` | The model family (e.g., "gpt", "claude", "gemini"). Affects how Copilot interacts with the model. Defaults to "generic". |
 
-#### Example: Grouped Configuration
+#### `model_parameters` Schema
 
-```json
-{
-  "generic-copilot.providers": [
-    {
-      "key": "modelscope",
-      "baseUrl": "https://api-inference.modelscope.cn/v1"
-    }
-  ],
-  "generic-copilot.models": [
-    {
-      "model_properties": {
-        "id": "Qwen/Qwen3-Coder-480B",
-        "provider": "modelscope",
-        "context_length": 256000,
-      },
-      "model_parameters": {
-        "max_tokens": 8192,
-        "temperature": 0.5
-      }
-    }
-  ]
-}
-```
-
-See the "Complete Configuration Example" section below for more comprehensive examples.
+| Field                   | Type     | Description                                                                                                                            |
+|-------------------------|----------|----------------------------------------------------------------------------------------------------------------------------------------|
+| `temperature`           | `number` | Controls randomness. Lower values are more deterministic. Range: `[0, 2]`. Defaults to `1`.                                            |
+| `max_tokens`            | `number` | The maximum number of tokens to generate. Defaults to `4096`.                                                                          |
+| `max_completion_tokens` | `number` | A newer OpenAI parameter for maximum tokens. Use this if your provider supports it.                                                    |
+| `reasoning_effort`      | `string` | For OpenAI models, controls reasoning level. Can be `minimal`, `low`, `medium`, `high`.                                                  |
+| `thinking`              | `object` | For Zai-compatible providers, enables chain-of-thought reasoning. Example: `{ "type": "enabled" }`.                                      |
+| `thinking_budget`       | `number` | The token budget for `thinking`.                                                                                                       |
+| `reasoning`             | `object` | For OpenRouter-compatible providers, controls reasoning. See `package.json` for the full schema.                                       |
+| `extra`                 | `object` | A container for any other parameters you want to send to the API. These are passed through directly.                                   |
 
 ---
 
-## 📖 Configuration Guide
+## ⚙️ Configuration Example
 
-Use `configId` to define multiple configurations for the same model with different settings:
-
-```json
-{
-  "generic-copilot.models": [
-    {
-      "id": "glm-4.6",
-      "configId": "thinking",
-      "provider": "zai",
-      "thinking": {
-        "type": "enabled"
-      }
-    },
-    {
-      "id": "glm-4.6",
-      "configId": "fast",
-      "provider": "zai",
-      "temperature": 0,
-      "thinking": {
-        "type": "disabled"
-      }
-    }
-  ]
-}
-```
-
-Models will appear in the picker as:
-- `glm-4.6::thinking`
-- `glm-4.6::fast`
-
----
-
-## � Complete Configuration Example
-
-Here's a comprehensive example showing multiple providers and various model configurations:
+Here is a complete example for your `settings.json` file, demonstrating how to configure multiple providers and models.
 
 ```json
 {
   "generic-copilot.providers": [
-    {
-      "key": "modelscope",
-      "displayName": "ModelScope",
-      "baseUrl": "https://api-inference.modelscope.cn/v1"
-    },
-    {
-      "key": "siliconflow",
-      "displayName": "SiliconFlow",
-      "baseUrl": "https://api.siliconflow.cn/v1"
-    },
-    {
-      "key": "zai",
-      "displayName": "Zai",
-      "baseUrl": "https://open.zaidata.com/v1"
-    },
     {
       "key": "openrouter",
       "displayName": "OpenRouter",
       "baseUrl": "https://openrouter.ai/api/v1"
+    },
+    {
+      "key": "zai",
+      "displayName": "Zai",
+      "baseUrl": "https://open.zaidata.com/v1",
+      "headers": {
+        "X-Source": "vscode-extension"
+      }
     }
   ],
-
   "generic-copilot.models": [
     {
-      "_comment": "Basic model configuration",
+      "_comment": "A simple model configuration inheriting from OpenRouter.",
+      "id": "anthropic/claude-3.5-sonnet",
+      "provider": "openrouter",
       "model_properties": {
-        "id": "Qwen/Qwen3-Coder-480B-A35B-Instruct",
-        "provider": "modelscope",
-        "context_length": 256000,
-        "family": "generic"
+        "context_length": 200000,
+        "family": "claude"
       },
       "model_parameters": {
         "max_tokens": 8192,
-        "temperature": 0,
+        "temperature": 0.7
       }
     },
     {
-      "_comment": "Different model with different parameters",
+      "_comment": "A model with two different configurations using configId.",
+      "id": "glm-4.6",
+      "provider": "zai",
+      "configId": "thinking",
+      "displayName": "GLM-4.6 (Thinking)",
       "model_properties": {
-        "id": "deepseek-ai/DeepSeek-V3",
-        "provider": "modelscope",
-        "context_length": 256000,
-        "family": "generic"
-      },
-      "model_parameters": {
-        "max_tokens": 8192,
-        "temperature": 0.5,
-      }
-    },
-    {
-      "_comment": "Model with multiple configs - thinking enabled",
-      "model_properties": {
-        "id": "glm-4.6",
-        "configId": "thinking",
-        "provider": "zai",
         "context_length": 256000
       },
       "model_parameters": {
-        "max_tokens": 8192,
-        "temperature": 0.7,
+        "temperature": 0.8,
         "thinking": {
           "type": "enabled"
-        },
-        "thinking_budget": 2048
-      }
-    },
-    {
-      "_comment": "Same model with thinking disabled",
-      "model_properties": {
-        "id": "glm-4.6",
-        "configId": "no-thinking",
-        "provider": "zai",
-        "context_length": 256000
-      },
-      "model_parameters": {
-        "max_tokens": 8192,
-        "temperature": 0,
-        "thinking": {
-          "type": "disabled"
         }
       }
     },
     {
-      "_comment": "Model with reasoning configuration",
+      "id": "glm-4.6",
+      "provider": "zai",
+      "configId": "fast",
+      "displayName": "GLM-4.6 (Fast)",
       "model_properties": {
-        "id": "anthropic/claude-3.5-sonnet",
-        "provider": "openrouter",
-        "context_length": 200000
+        "context_length": 256000
       },
       "model_parameters": {
-        "max_tokens": 4096,
-        "temperature": 0.8,
-        "reasoning": {
-          "enabled": true,
-          "effort": "high"
+        "temperature": 0.1
+      }
+    },
+    {
+      "_comment": "A model with custom parameters passed via the 'extra' field.",
+      "id": "google/gemini-flash-1.5",
+      "provider": "openrouter",
+      "model_parameters": {
+        "temperature": 0.5,
+        "extra": {
+          "top_p": 0.9,
+          "stop": ["\n"]
         }
       }
     }
   ]
 }
 ```
-
-**Key Points:**
-- Models inherit only `baseUrl`, `headers`, and API key from their provider
-- All `model_properties` (context_length, vision, family, etc.) must be explicitly defined
-- All `model_parameters` (temperature, max_tokens, etc.) must be explicitly defined, or they will not be sent in the request.
-- Use `configId` to create multiple configurations of the same model
 
 ---
 
@@ -360,81 +243,14 @@ When making a request:
 
 ### Custom Headers
 
-Headers can be set at provider or model level and are merged with model taking precedence:
-
-```json
-{
-  "generic-copilot.providers": [
-    {
-      "key": "custom",
-      "baseUrl": "https://api.example.com/v1",
-      "headers": {
-        "X-Provider-ID": "vscode",
-        "X-Region": "us-west"
-      }
-    }
-  ],
-  "generic-copilot.models": [
-    {
-      "id": "model-1",
-      "provider": "custom",
-      "headers": {
-        "X-Region": "eu-central",  // Overrides provider's X-Region
-        "X-Model-Tier": "premium"   // Adds new header
-      }
-    }
-  ]
-}
-```
-
-Final headers for `model-1`:
-- `X-Provider-ID: vscode` (from provider)
-- `X-Region: eu-central` (overridden by model)
-- `X-Model-Tier: premium` (from model)
+Headers can be set at the provider level and will be inherited by all models associated with that provider. See the `Provider Configuration` section for details.
 
 
 
 
 ### Thinking & Reasoning Models
 
-Configure display of model reasoning:
-
-**Zai Provider (Thinking):**
-
-```json
-{
-  "id": "glm-4.6",
-  "provider": "zai",
-  "thinking": {
-    "type": "enabled"
-  },
-  "thinking_budget": 2048
-}
-```
-
-**OpenRouter (Reasoning):**
-
-```json
-{
-  "id": "claude-3-opus",
-  "provider": "openrouter",
-  "reasoning": {
-    "enabled": true,
-    "effort": "high",
-    "exclude": false
-  }
-}
-```
-
-**OpenAI (Reasoning Effort):**
-
-```json
-{
-  "id": "o1-preview",
-  "provider": "openai",
-  "reasoning_effort": "high"
-}
-```
+Refer to the `model_parameters` schema in the Configuration Guide for details on how to configure thinking and reasoning.
 
 ### API Request Format
 
@@ -509,15 +325,7 @@ Use descriptive `configId` values:
 
 ### Headers for Custom Auth
 
-If a provider uses non-standard authentication, set it in headers:
-
-```json
-{
-  "headers": {
-    "X-API-Key": "your-key-here"
-  }
-}
-```
+If a provider uses non-standard authentication, set it in the `headers` object of the provider's configuration.
 
 ---
 
@@ -532,27 +340,19 @@ If a provider uses non-standard authentication, set it in headers:
 ### Authentication Errors
 
 1. Verify API key is set: Run "Set Multi-Provider Apikey" command
-2. Check if provider requires custom headers
+2. Check if provider requires custom headers in its provider configuration.
 3. Ensure `baseUrl` includes correct path (usually `/v1`)
 
 ### Provider Not Found
 
-1. Confirm `provider` field matches a provider's `key` exactly (case-sensitive)
-2. Check Developer Console for warnings about missing providers
-3. Verify JSON syntax is valid (no trailing commas, quotes closed)
-4. Remember: Only baseUrl, headers, and API key are inherited from providers
+1. Confirm `provider` field in your model configuration matches a provider's `key` exactly (case-sensitive).
+2. Check Developer Console for warnings about missing providers.
+3. Verify JSON syntax is valid (no trailing commas, quotes closed).
+4. Remember: Only `baseUrl` and `headers` are inherited from providers.
 
 ### Duplicate Model IDs
 
-Use `configId` to disambiguate models with the same `id`:
-
-```json
-{
-  "id": "same-model",
-  "configId": "variant-a",
-  "provider": "provider1"
-}
-```
+Use `configId` to disambiguate models with the same `id`. See the Configuration Example for a demonstration.
 
 ---
 
