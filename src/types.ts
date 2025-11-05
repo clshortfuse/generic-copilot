@@ -43,6 +43,7 @@ export interface ChatMessageContent {
 export interface ModelParameters {
 	// Allow null so user can explicitly disable sending this parameter (fall back to provider default)
 	temperature?: number | null;
+	top_p?: number | null;
 
 	max_tokens?: number;
 	// OpenAI new standard parameter
@@ -67,10 +68,7 @@ export interface ModelParameters {
  * Internal properties used by the extension, not sent to the API
  */
 export interface ModelProperties {
-
 	owned_by?: string;
-
-	configId?: string;
 	context_length?: number;
 	/**
 	 * Optional family specification for the model. This allows users to specify
@@ -87,13 +85,17 @@ export interface ModelProperties {
  */
 export interface ModelItem {
 	id: string;
-
 	displayName?: string;
 	/**
 	 * Model provider. Can be overridden by provider reference.
 	 * If 'provider' field is specified, this value is inherited from the provider.
 	 */
 	provider?: string;
+	/**
+	 * Configuration variant identifier for models that share the same base id.
+	 * This is a configuration-level attribute and not a model property.
+	 */
+	configId?: string;
 	model_properties: ModelProperties;
 	model_parameters: ModelParameters;
 }

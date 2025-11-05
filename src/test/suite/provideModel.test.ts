@@ -65,10 +65,10 @@ suite('ProvideModel Test Suite', () => {
         test('should use configId in model ID when present', async () => {
             const models: ModelItem[] = [{
                 id: 'gpt-4',
+                configId: 'thinking',
                 model_properties: {
 
                     owned_by: 'openai',
-                    configId: 'thinking',
                 },
                 model_parameters: {}
             }];
@@ -320,10 +320,10 @@ suite('ProvideModel Test Suite', () => {
         test('should handle configId in tooltip', async () => {
             const models: ModelItem[] = [{
                 id: 'gpt-4',
+                configId: 'thinking',
                 model_properties: {
 
                     owned_by: 'openai',
-                    configId: 'thinking',
                 },
                 model_parameters: {}
             }];

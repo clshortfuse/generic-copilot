@@ -43,7 +43,7 @@ suite('End-to-End Integration Test Suite', () => {
             const models: ModelItem[] = [{
                 id: 'test-model',
                 model_properties: {
-                    owned_by: 'test',
+                    owned_by: 'test-provider',
                 },
                 model_parameters: {}
             }];
@@ -108,7 +108,7 @@ suite('End-to-End Integration Test Suite', () => {
             const models: ModelItem[] = [{
                 id: 'test-model',
                 model_properties: {
-                    owned_by: 'test',
+                    owned_by: 'test-provider',
                 },
                 model_parameters: {}
             }];
@@ -306,7 +306,7 @@ suite('End-to-End Integration Test Suite', () => {
             const models: ModelItem[] = [{
                 id: 'test-model',
                 model_properties: {
-                    owned_by: 'test',
+                    owned_by: 'test-provider',
                 },
                 model_parameters: {}
             }];
@@ -419,10 +419,10 @@ suite('End-to-End Integration Test Suite', () => {
                 {
                     id: 'model',
                     provider: 'test-provider',
+                    configId: 'thinking',
                     model_properties: {
 
                         owned_by: 'test-provider',
-                        configId: 'thinking',
                     },
                     model_parameters: {
                     }
@@ -430,10 +430,10 @@ suite('End-to-End Integration Test Suite', () => {
                 {
                     id: 'model',
                     provider: 'test-provider',
+                    configId: 'standard',
                     model_properties: {
 
                         owned_by: 'test-provider',
-                        configId: 'standard'
                     },
                     model_parameters: {
                     }

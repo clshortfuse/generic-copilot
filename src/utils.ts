@@ -534,6 +534,7 @@ export function resolveModelWithProvider(model: ModelItem): ModelItem {
 		id: model.id,
 		displayName: model.displayName ?? model.id,
 		provider: provider.key,
+		configId: model.configId,
 		model_properties: {
 			...model.model_properties,
 			owned_by: provider.key,

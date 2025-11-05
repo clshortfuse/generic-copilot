@@ -10,6 +10,10 @@ import {
     VscodeDivider,
     VscodeTabPanel,
     VscodeCollapsible,
+    VscodeFormHelper,
+    VscodeTextfield,
+    VscodeSingleSelect,
+    VscodeOption,
 } from '@vscode-elements/react-elements';
 
 export interface ModelsProps {
@@ -18,44 +22,6 @@ export interface ModelsProps {
     onChange: (models: ModelItem[]) => void;
 }
 
-const ensureProps = (m: Partial<ModelItem>): ModelItem => {
-    if ((m as any).model_properties && (m as any).model_parameters) {
-        return m as ModelItem;
-    }
-    // migrate flat -> grouped
-    const flat: any = m;
-    const model_properties: ModelProperties = {
-        id: flat?.id ?? '',
-        provider: flat?.provider,
-        configId: flat?.configId,
-        owned_by: flat?.owned_by,
-        baseUrl: flat?.baseUrl,
-        displayName: flat?.displayName,
-        family: flat?.family,
-        context_length: flat?.context_length,
-        vision: flat?.vision,
-        headers: flat?.headers,
-        architecture: flat?.architecture,
-    } as unknown as ModelProperties;
-    const model_parameters: ModelParameters = {
-        max_tokens: flat?.max_tokens,
-        max_completion_tokens: flat?.max_completion_tokens,
-        temperature: flat?.temperature ?? undefined,
-        top_p: flat?.top_p ?? undefined,
-        top_k: flat?.top_k,
-        min_p: flat?.min_p,
-        frequency_penalty: flat?.frequency_penalty,
-        presence_penalty: flat?.presence_penalty,
-        repetition_penalty: flat?.repetition_penalty,
-        thinking_budget: flat?.thinking_budget,
-        thinking: flat?.thinking,
-        reasoning: flat?.reasoning,
-        reasoning_effort: flat?.reasoning_effort,
-        extra: flat?.extra,
-    } as unknown as ModelParameters;
-    return { model_properties, model_parameters } as ModelItem;
-};
-
 const ModelItemCard: React.FC<{
     value: ModelItem;
     index: number;
@@ -63,12 +29,33 @@ const ModelItemCard: React.FC<{
     onUpdate: (next: ModelItem) => void;
     onRemove: () => void;
 }> = ({ value, index, providers, onUpdate, onRemove }) => {
-    const updateProps = (p: ModelProperties) => onUpdate({ ...value, model_properties: p });
+    const updateField = (field: keyof ModelItem | keyof ModelProperties, v: any) => {
+        const next: any = { ...value };
+        if (['id', 'displayName', 'provider', 'configId'].includes(field as string)) {
+            if (v === undefined) {
+                delete next[field];
+            } else {
+                next[field] = v;
+            }
+        } else {
+            const nextProps = { ...value.model_properties };
+            if (v === undefined) {
+                delete nextProps[field as keyof ModelProperties];
+            } else {
+                nextProps[field as keyof ModelProperties] = v;
+            }
+            next.model_properties = nextProps;
+        }
+        onUpdate(next as ModelItem);
+    };
     const updateParams = (p: ModelParameters) => onUpdate({ ...value, model_parameters: p });
+    const props: ModelProperties = {
+        ...value.model_properties,
+    } as any;
 
     return (
         <div className="item">
-            <VscodeCollapsible heading={`Model ${index + 1}${value?.model_properties?.id ? ` – ${value.model_properties.id}` : ''}`} alwaysShowHeaderActions>
+            <VscodeCollapsible heading={`Model ${index + 1}${value?.id ? ` – ${value.id}` : ''}`} alwaysShowHeaderActions>
                 <VscodeButton onClick={onRemove} secondary slot="actions">
                     Remove
                 </VscodeButton>
@@ -76,7 +63,63 @@ const ModelItemCard: React.FC<{
                     <VscodeTabHeader slot="header">Properties</VscodeTabHeader>
                     <VscodeTabHeader slot="header">Parameters</VscodeTabHeader>
                     <VscodeTabPanel>
-                        <ModelPropertiesForm value={value.model_properties} providers={providers} onChange={updateProps} />
+                        <div className="collapsible-content">
+                            <div className="form-field">
+                                <VscodeFormHelper>Model ID (required) *</VscodeFormHelper>
+                                <VscodeTextfield
+                                    type="text"
+                                    placeholder="e.g., gpt-4, claude-3-opus"
+                                    value={value?.id ?? ''}
+                                    onInput={(e: any) => updateField('id', e.currentTarget.value)}
+                                >
+                                </VscodeTextfield>
+                                <VscodeFormHelper style={{ color: 'var(--vscode-errorForeground)', display: value?.id ? 'none' : 'block' }}>
+                                    Model ID is required
+                                </VscodeFormHelper>
+                            </div>
+
+                            <div className="form-field">
+                                <VscodeFormHelper>Display Name</VscodeFormHelper>
+                                <VscodeTextfield
+                                    type="text"
+                                    placeholder="Optional human-readable name"
+                                    value={value?.displayName ?? ''}
+                                    onInput={(e: any) => updateField('displayName', e.currentTarget.value)}
+                                >
+                                </VscodeTextfield>
+                            </div>
+
+                            <div className="form-field">
+                                <VscodeFormHelper>Provider</VscodeFormHelper>
+                                <VscodeSingleSelect
+                                    value={value?.provider ?? ''}
+                                    onInput={(e: any) => updateField('provider', e.currentTarget.value)}
+                                >
+                                    <VscodeOption value="" disabled>
+                                        Select a provider
+                                    </VscodeOption>
+                                    {providers.map((p) => (
+                                        <VscodeOption key={p.key} value={p.key}>
+                                            {p.displayName || p.key}
+                                        </VscodeOption>
+                                    ))}
+                                </VscodeSingleSelect>
+                                <VscodeFormHelper>Select a provider to inherit baseUrl and defaults (optional)</VscodeFormHelper>
+                            </div>
+                            <div className="form-field">
+                                <VscodeFormHelper>Config ID</VscodeFormHelper>
+                                <VscodeTextfield
+                                    type="text"
+                                    placeholder="Optional: e.g., None, Low, Med, High"
+                                    value={value?.configId ?? ''}
+                                    onInput={(e: any) => updateField('configId' as keyof ModelItem, e.currentTarget.value)}
+                                >
+                                </VscodeTextfield>
+                                <VscodeFormHelper>Used to distinguish variants with the same model id</VscodeFormHelper>
+                            </div>
+                            <VscodeDivider></VscodeDivider>
+                            <ModelPropertiesForm value={props} providers={providers} onChange={updateField} />
+                        </div>
                     </VscodeTabPanel>
                     <VscodeTabPanel>
                         <ModelParamsForm value={value.model_parameters} onChange={updateParams} />
@@ -90,7 +133,7 @@ const ModelItemCard: React.FC<{
 
 export const Models: React.FC<ModelsProps> = ({ providers, models, onChange }) => {
     const addModel = () => {
-        const base: ModelItem = { model_properties: { id: '', provider: '', owned_by: '' }, model_parameters: {} } as any;
+        const base: ModelItem = { id: '', provider: '', model_properties: {}, model_parameters: {} };
         onChange([...(models ?? []), base]);
     };
 
@@ -124,7 +167,7 @@ export const Models: React.FC<ModelsProps> = ({ providers, models, onChange }) =
                 {models.map((m, i) => (
                     <ModelItemCard
                         key={i}
-                        value={ensureProps(m)}
+                        value={m}
                         index={i}
                         providers={providers}
                         onUpdate={(nm) => updateAt(i, nm)}

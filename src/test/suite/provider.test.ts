@@ -16,6 +16,7 @@ suite('ChatModelProvider Test Suite', () => {
     let mockConfig: MockConfiguration;
     let originalGetConfiguration: typeof vscode.workspace.getConfiguration;
     let originalFetch: typeof global.fetch;
+    let originalShowInputBox: typeof vscode.window.showInputBox;
     const userAgent = 'test-agent/1.0';
 
     setup(() => {
@@ -23,11 +24,17 @@ suite('ChatModelProvider Test Suite', () => {
         mockConfig = new MockConfiguration();
         originalGetConfiguration = vscode.workspace.getConfiguration;
         originalFetch = global.fetch;
+        originalShowInputBox = vscode.window.showInputBox;
         (vscode.workspace as { getConfiguration: unknown }).getConfiguration = () => mockConfig;
+        (vscode.window as { showInputBox: unknown }).showInputBox = async () => 'mock-api-key';
 
         // Setup default configuration
         mockConfig.set('generic-copilot.models', []);
-        mockConfig.set('generic-copilot.providers', []);
+        mockConfig.set('generic-copilot.providers', [{
+            key: 'test',
+            baseUrl: 'https://test.api/v1',
+            models: ['test-model']
+        }]);
         mockConfig.set('generic-copilot.retry', {
             enabled: false,  // Disable retry for most tests
             max_attempts: 1,
@@ -39,6 +46,7 @@ suite('ChatModelProvider Test Suite', () => {
     teardown(() => {
         (vscode.workspace as { getConfiguration: unknown }).getConfiguration = originalGetConfiguration;
         global.fetch = originalFetch;
+        (vscode.window as { showInputBox: unknown }).showInputBox = originalShowInputBox;
     });
 
     suite('provideLanguageModelChatInformation', () => {
@@ -347,6 +355,12 @@ suite('ChatModelProvider Test Suite', () => {
             }];
 
             mockConfig.set('generic-copilot.models', models);
+            // Temporarily set an invalid base URL for this test
+            mockConfig.set('generic-copilot.providers', [{
+                key: 'test',
+                baseUrl: 'invalid-url',
+                models: ['test-model']
+            }]);
             await mockSecrets.store('generic-copilot.apiKey.test', 'test-key');
 
             const provider = new ChatModelProvider(mockSecrets, userAgent);
@@ -368,8 +382,15 @@ suite('ChatModelProvider Test Suite', () => {
                     progress,
                     token
                 ),
-                'Invalid base URL'
+                'Invalid or missing base URL'
             );
+
+            // Restore the original mock config
+            mockConfig.set('generic-copilot.providers', [{
+                key: 'test',
+                baseUrl: 'https://test.api/v1',
+                models: ['test-model']
+            }]);
         });
 
         test('should handle API error response', async () => {

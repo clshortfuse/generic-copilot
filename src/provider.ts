@@ -197,12 +197,11 @@ export class ChatModelProvider implements LanguageModelChatProvider {
 			// Find the matching user model configuration
 			// Prefer match: same model id AND same configId AND (if present) same provider key
 			let um: ModelItem | undefined = userModels.find((m) => {
-				const props = getModelProperties(m);
 				if (m.id !== baseIdForMatch) {
 					return false;
 				}
 				const configMatch =
-					(parsedModelId.configId && props.configId === parsedModelId.configId) || (!parsedModelId.configId && !props.configId);
+					(parsedModelId.configId && m.configId === parsedModelId.configId) || (!parsedModelId.configId && !m.configId);
 				if (!configMatch) {
 					return false;
 				}
@@ -216,12 +215,9 @@ export class ChatModelProvider implements LanguageModelChatProvider {
 			// If not found, relax provider constraint (match by id and configId only)
 			if (!um) {
 				um = userModels.find(
-					(m) => {
-						const props = getModelProperties(m);
-						return m.id === baseIdForMatch &&
-							((parsedModelId.configId && props.configId === parsedModelId.configId) ||
-								(!parsedModelId.configId && !props.configId));
-					}
+					(m) => m.id === baseIdForMatch &&
+						((parsedModelId.configId && m.configId === parsedModelId.configId) ||
+							(!parsedModelId.configId && !m.configId))
 				);
 			}
 
@@ -338,6 +334,14 @@ export class ChatModelProvider implements LanguageModelChatProvider {
 		const temperature = params.temperature ?? oTemperature;
 		rb.temperature = temperature;
 
+		// top_p
+		const oTopP = options.modelOptions?.top_p ?? 0.9;
+		const topP = params.top_p ?? oTopP;
+		rb.top_p = topP;
+
+		if (params.top_p === null) {
+			delete rb.top_p;
+		}
 
 		// If user model config explicitly sets sampling params to null, remove them so provider defaults apply
 		if (params.temperature === null) {
