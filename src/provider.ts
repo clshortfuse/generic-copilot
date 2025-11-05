@@ -29,6 +29,8 @@ import { prepareLanguageModelChatInformation } from "./provideModel";
 import { prepareTokenCount } from "./provideToken";
 
 const MAX_TOOLS_PER_REQUEST = 128;
+const LOG_PREFIX_REQUEST_HEADERS = "[Generic Compatible Model Provider] Request headers:";
+const COMPLETIONS_ENDPOINT = "/chat/completions";
 
 export class ChatModelProvider implements LanguageModelChatProvider {
 	/** Buffer for assembling streamed tool calls by index. */
@@ -292,11 +294,11 @@ export class ChatModelProvider implements LanguageModelChatProvider {
 						if (debugHeaders) {
 							const snapshot: Record<string, string> = {};
 							headers.forEach((v, k) => { snapshot[k] = v; });
-							console.log("[Generic Compatible Model Provider] Request headers:", snapshot);
+							console.log(LOG_PREFIX_REQUEST_HEADERS, snapshot);
 						}
 					} catch { /* ignore */ }
 
-					const res = await fetch(`${BASE_URL}/chat/completions`, {
+					const res = await fetch(`${BASE_URL}${COMPLETIONS_ENDPOINT}`, {
 						method: "POST",
 						headers,
 						body: JSON.stringify(requestBody),
