@@ -15,7 +15,7 @@
 		"type": "git",
 		"url": "https://github.com/mcowger/generic-copilot-providers"
 	},
-	"version": "0.9.0",
+	"version": "0.9.1",
 	"engines": {
 		"vscode": "^1.105.0"
 	},
@@ -285,9 +285,9 @@
 	"scripts": {
 		"prepublish": "npm run compile",
 		"download-api": "npx dts dev && mv vscode.proposed.*.ts src",
-		"compile": "tsc -p ./ && cd webview-ui && npm install && npm run compile",
+		"compile": "tsc -p ./ && cd webview-ui && npm run compile",
 		"compile:extension": "tsc -p ./",
-		"compile:webview": "cd webview-ui && npm install && npm run compile",
+		"compile:webview": "cd webview-ui  && npm run compile",
 		"lint": "eslint",
 		"format": "prettier --write .",
 		"watch": "tsc -watch -p ./",
