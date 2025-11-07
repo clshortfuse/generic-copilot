@@ -283,7 +283,6 @@
 	},
 	"main": "./out/extension.js",
 	"scripts": {
-		"prepublish": "npm run compile",
 		"download-api": "npx dts dev && mv vscode.proposed.*.ts src",
 		"compile": "tsc -p ./ && cd webview-ui && npm run compile",
 		"compile:extension": "tsc -p ./",

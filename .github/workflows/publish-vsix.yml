@@ -25,14 +25,14 @@ jobs:
       - name: Install base dependencies
         working-directory: ./
         run: |
-          npm i
+          npm ci
           npm run download-api
 
 
       - name: Install webview dependencies
         working-directory: ./webview-ui
         run: |
-          npm i
+          npm ci
 
       - name: Build extension
         run: npm run compile:extension
