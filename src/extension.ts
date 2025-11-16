@@ -3,6 +3,7 @@ import { ChatModelProvider } from "./provider";
 import type { ModelItem, ProviderConfig } from "./types";
 import { resolveModelWithProvider } from "./utils";
 import { ConfigurationPanel } from "./configurationPanel";
+import { SidebarTreeDataProvider } from "./sidebarProvider";
 
 export function activate(context: vscode.ExtensionContext) {
 	// Build a descriptive User-Agent to help quantify API usage
@@ -23,6 +24,12 @@ export function activate(context: vscode.ExtensionContext) {
 		})
 	);
 
+	// Register sidebar view
+	const sidebarProvider = new SidebarTreeDataProvider(context);
+	context.subscriptions.push(
+		vscode.window.registerTreeDataProvider("generic-copilot-models", sidebarProvider)
+	);
+
 	// Command to refresh model configurations
 	context.subscriptions.push(
 		vscode.commands.registerCommand("generic-copilot.refresh", async () => {
@@ -38,6 +45,8 @@ export function activate(context: vscode.ExtensionContext) {
 					providerRegistration = vscode.lm.registerLanguageModelChatProvider("generic-copilot", provider);
 					context.subscriptions.push(providerRegistration);
 				}
+				// Also refresh the sidebar
+				sidebarProvider.refresh();
 				vscode.window.showInformationMessage("GenericCopilot model configurations refreshed.");
 			} catch (err) {
 				const msg = err instanceof Error ? err.message : String(err);

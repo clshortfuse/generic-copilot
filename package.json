@@ -57,6 +57,38 @@
 				"title": "GenericCopilot: Refresh Model Configs"
 			}
 		],
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"id": "generic-copilot-sidebar",
+					"title": "Generic Copilot",
+					"icon": "assets/sidebar-icon.svg"
+				}
+			]
+		},
+		"views": {
+			"generic-copilot-sidebar": [
+				{
+					"id": "generic-copilot-models",
+					"name": "Models & Providers",
+					"when": "true"
+				}
+			]
+		},
+		"menus": {
+			"view/title": [
+				{
+					"command": "generic-copilot.refresh",
+					"when": "view == generic-copilot-models",
+					"group": "navigation"
+				},
+				{
+					"command": "generic-copilot.openConfiguration",
+					"when": "view == generic-copilot-models",
+					"group": "navigation"
+				}
+			]
+		},
 		"configuration": {
 			"title": "Generic Compatible Copilot",
 			"properties": {
