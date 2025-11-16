@@ -97,6 +97,20 @@ export class ChatModelProvider implements LanguageModelChatProvider {
 	}
 
 	/**
+	 * Create a visual progress bar showing token usage
+	 * @param usedTokens Tokens used
+	 * @param maxTokens Maximum tokens available
+	 * @returns Progress bar string (e.g., "▆ 75%")
+	 */
+	private createProgressBar(usedTokens: number, maxTokens: number): string {
+		const blocks = ["▁","▂","▃","▄","▅","▆","▇","█"];
+		const usagePercentage = Math.min((usedTokens / maxTokens) * 100, 100);
+		const blockIndex = Math.min(Math.floor((usagePercentage / 100) * blocks.length), blocks.length - 1);
+
+		return `${blocks[blockIndex]} ${Math.round(usagePercentage)}%`;
+	}
+
+	/**
 	 * Get the list of available language models contributed by this provider
 	 * @param options Options which specify the calling context of this function
 	 * @param token A cancellation token which signals if the user cancelled the request or not
@@ -878,10 +892,13 @@ export class ChatModelProvider implements LanguageModelChatProvider {
 
 		// Update status bar with token count and model context window
 		const maxTokens = model.maxInputTokens;
-		const displayText = `$(symbol-parameter) ${this.formatTokenCount(totalTokenCount)} / ${this.formatTokenCount(maxTokens)}`;
+
+		// Create visual progress bar with single progressive block
+		const progressBar = this.createProgressBar(totalTokenCount, maxTokens);
+		const displayText = `$(symbol-parameter) ${progressBar}`;
 		console.log(displayText)
 		this.statusBarItem.text = displayText;
-		this.statusBarItem.tooltip = `Token Usage: ${this.formatTokenCount(totalTokenCount)} / ${this.formatTokenCount(maxTokens)}\n\nClick to open configuration`;
+		this.statusBarItem.tooltip = `Token Usage: ${this.formatTokenCount(totalTokenCount)} / ${this.formatTokenCount(maxTokens)}\n\n${progressBar}\n\nClick to open configuration`;
 
 		// Add color coding based on token usage
 		const usagePercentage = (totalTokenCount / maxTokens) * 100;
