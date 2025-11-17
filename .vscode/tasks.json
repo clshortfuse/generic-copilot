@@ -3,33 +3,37 @@
 	"tasks": [
 		{
 			"type": "npm",
-			"label": "npm: watch",
-			"script": "watch",
+			"label": "watch:extension",
+			"script": "watch:extension",
 			"problemMatcher": "$tsc-watch",
 			"isBackground": true,
 			"presentation": {
-				"reveal": "never",
+				"reveal": "always",
 				"group": "watchers"
 			}
 		},
 		{
 			"type": "npm",
-			"label": "npm: watch-tests",
-			"script": "watch-tests",
-			"problemMatcher": "$tsc-watch",
+			"label": "watch:webview",
+			"script": "watch:webview",
+			"problemMatcher": [],
 			"isBackground": true,
 			"presentation": {
-				"reveal": "never",
+				"reveal": "always",
 				"group": "watchers"
 			}
 		},
 		{
-			"label": "tasks: watch-tests",
+			"label": "tasks:watchall",
 			"dependsOn": [
-				"npm: watch",
-				"npm: watch-tests"
+				"watch:extension",
+				"watch:webview"
 			],
-			"problemMatcher": []
+			"problemMatcher": [],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
 		}
 	]
 }
