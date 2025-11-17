@@ -32,7 +32,7 @@ const ModelItemCard: React.FC<{
     const updateField = (field: keyof ModelItem | keyof ModelProperties, v: any) => {
         const next: any = { ...value };
         if (['id', 'displayName', 'provider', 'configId'].includes(field as string)) {
-            if (v === undefined) {
+            if (v === '' || v === undefined) {
                 delete next[field];
             } else {
                 next[field] = v;
@@ -92,8 +92,8 @@ const ModelItemCard: React.FC<{
                             <div className="form-field">
                                 <VscodeFormHelper>Provider</VscodeFormHelper>
                                 <VscodeSingleSelect
-                                    value={value?.provider ?? ''}
-                                    onInput={(e: any) => updateField('provider', e.currentTarget.value)}
+                                    value={value?.provider || ''}
+                                    onChange={(e: any) => updateField('provider', e.currentTarget.value)}
                                 >
                                     <VscodeOption value="" disabled>
                                         Select a provider
@@ -133,7 +133,7 @@ const ModelItemCard: React.FC<{
 
 export const Models: React.FC<ModelsProps> = ({ providers, models, onChange }) => {
     const addModel = () => {
-        const base: ModelItem = { id: '', provider: '', model_properties: {}, model_parameters: {} };
+        const base: ModelItem = { id: '', model_properties: {}, model_parameters: {} };
         onChange([...(models ?? []), base]);
     };
 

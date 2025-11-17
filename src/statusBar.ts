@@ -53,7 +53,7 @@ export async function updateContextStatusBar(
 	}
 
 	// Update status bar with token count and model context window
-	const maxTokens = model.maxInputTokens;
+	const maxTokens = model.maxInputTokens + model.maxOutputTokens;
 
 	// Create visual progress bar with single progressive block
 	const progressBar = createProgressBar(totalTokenCount, maxTokens);

@@ -38,6 +38,7 @@ export async function prepareLanguageModelChatInformation(
 			const maxOutput = DEFAULT_MAX_TOKENS;
 			const maxInput = Math.max(1, contextLen - maxOutput);
 
+
 			// Build canonical ID using provider key and raw model id
 			const modelId = resolved.configId
 				? `${props.owned_by}/${resolved.id}::${resolved.configId}`
