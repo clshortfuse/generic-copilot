@@ -276,18 +276,12 @@ export class ChatModelProvider implements LanguageModelChatProvider {
 				);
 			}
 
-			// get retry config
-			const retryConfig = createRetryConfig();
-
-
-			// Process custom headers from provider config
-			const customHeaders = processHeaders(providerConfig?.headers);
+					// Process custom headers from provider config
+					const customHeaders = processHeaders(providerConfig?.headers);
 
 			await updateContextStatusBar(messages, model, this.statusBarItem, (m, msg) => this.provideTokenCount(m, msg, new CancellationTokenSource().token));
 
-			// send chat request with retry
-			const response = await executeWithRetry(
-				async () => {
+					// send chat request
 					// Build headers using the WHATWG Headers API to ensure proper override behavior
 					const headers = new Headers();
 					headers.set("Authorization", `Bearer ${modelApiKey}`);
@@ -308,25 +302,19 @@ export class ChatModelProvider implements LanguageModelChatProvider {
 						}
 					} catch { /* ignore */ }
 
-					const res = await fetch(`${BASE_URL}${COMPLETIONS_ENDPOINT}`, {
+					const response = await fetch(`${BASE_URL}${COMPLETIONS_ENDPOINT}`, {
 						method: "POST",
 						headers,
 						body: JSON.stringify(requestBody),
 					});
 
-					if (!res.ok) {
-						const errorText = await res.text();
+					if (!response.ok) {
+						const errorText = await response.text();
 						console.error("[Generic Compatible Model Provider] Generic Compatible API error response", errorText);
 						throw new Error(
-							`Generic Compatible API error: [${res.status}] ${res.statusText}${errorText ? `\n${errorText}` : ""}`
+							`Generic Compatible API error: [${response.status}] ${response.statusText}${errorText ? `\n${errorText}` : ""}`
 						);
 					}
-
-					return res;
-				},
-				retryConfig,
-				token
-			);
 
 			if (!response.body) {
 				throw new Error("No response body from Generic Compatible API");
