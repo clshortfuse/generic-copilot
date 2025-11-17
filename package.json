@@ -277,34 +277,6 @@
 						]
 					}
 				},
-				"generic-copilot.retry": {
-					"type": "object",
-					"default": {
-						"enabled": true,
-						"max_attempts": 3,
-						"interval_ms": 1000
-					},
-					"properties": {
-						"enabled": {
-							"type": "boolean",
-							"default": true,
-							"description": "Enable retry mechanism for api errors. Default is true."
-						},
-						"max_attempts": {
-							"type": "number",
-							"default": 3,
-							"minimum": 1,
-							"description": "Maximum number of retry attempts. Default is 3."
-						},
-						"interval_ms": {
-							"type": "number",
-							"default": 1000,
-							"minimum": 1,
-							"description": "Interval between retry attempts in milliseconds. Default is 1000 (1 seconds)."
-						}
-					},
-					"description": "Retry configuration for handling api errors like [429, 500, 502, 503, 504]."
-				},
 				"generic-copilot.delay": {
 					"type": "number",
 					"default": 0,

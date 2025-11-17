@@ -5,16 +5,9 @@ import type {
 	OpenAIChatRole,
 	OpenAIFunctionToolDef,
 	OpenAIToolCall,
-	RetryConfig,
 	ProviderConfig,
 	ModelItem
 } from "./types";
-
-const RETRY_MAX_ATTEMPTS = 3;
-const RETRY_INTERVAL_MS = 1000;
-
-// HTTP status codes that should trigger a retry
-const RETRYABLE_STATUS_CODES = [429, 500, 502, 503, 504];
 
 // Model ID parsing helper
 export interface ParsedModelId {
@@ -407,99 +400,6 @@ export function tryParseJSONObject(text: string): { ok: true; value: Record<stri
 	} catch {
 		return { ok: false };
 	}
-}
-
-/**
- * Create retry configuration from VS Code workspace settings.
- * @returns Retry configuration with default values.
- */
-export function createRetryConfig(): RetryConfig {
-	const config = vscode.workspace.getConfiguration();
-	const retryConfig = config.get<RetryConfig>("generic-copilot.retry", {
-		enabled: true,
-		max_attempts: RETRY_MAX_ATTEMPTS,
-		interval_ms: RETRY_INTERVAL_MS,
-	});
-
-	return {
-		enabled: retryConfig.enabled ?? true,
-		max_attempts: retryConfig.max_attempts ?? RETRY_MAX_ATTEMPTS,
-		interval_ms: retryConfig.interval_ms ?? RETRY_INTERVAL_MS,
-	};
-}
-
-/**
- * Execute a function with retry logic for rate limiting.
- * @param fn The async function to execute
- * @param retryConfig Retry configuration
- * @param token Cancellation token
- * @returns Result of the function execution
- */
-export async function executeWithRetry<T>(
-	fn: () => Promise<T>,
-	retryConfig: RetryConfig,
-	token: vscode.CancellationToken
-): Promise<T> {
-	if (!retryConfig.enabled) {
-		return await fn();
-	}
-
-	const maxAttempts = retryConfig.max_attempts ?? RETRY_MAX_ATTEMPTS;
-	const intervalMs = retryConfig.interval_ms ?? RETRY_INTERVAL_MS;
-	let lastError: Error | undefined;
-
-	for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-		// Check for cancellation before each attempt
-		if (token.isCancellationRequested) {
-			throw new Error("Request was cancelled");
-		}
-
-		try {
-			return await fn();
-		} catch (error) {
-			lastError = error instanceof Error ? error : new Error(String(error));
-
-			// Check if error is retryable based on status codes
-			const isRetryableError = RETRYABLE_STATUS_CODES.some((code) => lastError?.message.includes(`[${code}]`));
-
-			if (!isRetryableError || attempt === maxAttempts) {
-				throw lastError;
-			}
-
-			console.warn(
-				`[Generic Compatible Model Provider] Retryable error detected, retrying in ${intervalMs}ms (attempt ${attempt}/${maxAttempts})`
-			);
-
-			// Wait for the specified interval before retrying
-			await new Promise<void>((resolve) => {
-				let isResolved = false;
-				const cleanup = () => {
-					if (!isResolved) {
-						cancellationListener.dispose();
-						isResolved = true;
-					}
-				};
-				const timeout = setTimeout(() => {
-					cleanup();
-					resolve();
-				}, intervalMs);
-
-				const cancellationListener = token.onCancellationRequested(() => {
-					clearTimeout(timeout);
-					cleanup();
-					resolve();
-				});
-			});
-
-			// Check if we were cancelled during the wait
-			if (token.isCancellationRequested) {
-				throw new Error("Request was cancelled");
-			}
-		}
-	}
-
-	// This should never be reached, but TypeScript needs it
-	throw lastError || new Error("Retry failed");
 }
 
 /**

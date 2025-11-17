@@ -137,15 +137,6 @@ export type ReasoningDetail = ReasoningSummaryDetail | ReasoningEncryptedDetail 
 
 
 /**
- * Retry configuration for rate limiting
- */
-export interface RetryConfig {
-	enabled?: boolean;
-	max_attempts?: number;
-	interval_ms?: number;
-}
-
-/**
  * Provider configuration that can be inherited by models
  */
 export interface ProviderConfig {
