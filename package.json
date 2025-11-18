@@ -72,7 +72,8 @@
 				{
 					"id": "generic-copilot-models",
 					"name": "Models & Providers",
-					"when": "true"
+					"when": "true",
+					"icon": "assets/sidebar-icon.svg"
 				}
 			]
 		},
@@ -313,6 +314,7 @@
 		"typescript-eslint": "^8.46.2"
 	},
 	"dependencies": {
+		"openai": "^6.9.1",
 		"tiktoken": "^1.0.22"
 	}
 }
