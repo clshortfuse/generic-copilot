@@ -18,8 +18,7 @@ import {
 	LanguageModelChatMessageRole,
 	LanguageModelToolResultPart,
 } from "vscode";
-import { resolveModelWithProvider } from "./provideModel"
-import { match } from "assert";
+import { resolveModelWithProvider } from "./provideModel";
 
 // Model ID parsing helper
 export interface ParsedModelId {
@@ -83,7 +82,7 @@ export function convertTools(tools: LanguageModelChatTool[]): { tools?: OpenAITo
 			};
 		});
 
-	const tool_choice = "auto"
+	const tool_choice = "auto";
 
 	return { tools: toolDefs, tool_choice };
 }
@@ -251,7 +250,7 @@ export function convertLmModeltoModelItem(model: LanguageModelChatInformation): 
 	});
 
 	const resolvedModel = um ? resolveModelWithProvider(um) : um;
-	return resolvedModel
+	return resolvedModel;
 
 }
 

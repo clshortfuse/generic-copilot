@@ -1,12 +1,50 @@
 import * as vscode from "vscode";
+import * as fs from "fs";
+import * as path from "path";
 import { ChatModelProvider } from "./provider";
 import type { ProviderConfig } from "./types";
 import { ConfigurationPanel } from "./configurationPanel";
 import { initStatusBar } from "./statusBar";
 
+function setupDevAutoRestart(context: vscode.ExtensionContext) {
+	if (context.extensionMode !== vscode.ExtensionMode.Development) {
+		return;
+	}
+
+	const outDir = path.join(context.extensionPath, "out");
+	if (!fs.existsSync(outDir)) {
+		return;
+	}
+
+	let restartTimeout: NodeJS.Timeout | undefined;
+	const scheduleRestart = () => {
+		console.debug(`generic-copilot: file changed, scheduling restart`);
+		if (restartTimeout) {
+			clearTimeout(restartTimeout);
+		}
+		restartTimeout = setTimeout(async () => {
+			console.debug(`generic-copilot: Reloading extension host window`);
+			restartTimeout = undefined;
+			await vscode.commands.executeCommand("workbench.action.reloadWindow");
+			console.log("generic-copilot: window reload triggered");
+		}, 100);
+	};
+
+	// Watch the out directory for changes.  Sigh.
+	try {
+		const watcher = fs.watch(outDir, { recursive: true }, (_eventType, filename) => {
+			if (filename?.endsWith(".js") || filename?.endsWith(".js.map")) {
+				scheduleRestart();
+			}
+		});
+		context.subscriptions.push({ dispose: () => watcher.close() });
+	} catch (e) {
+		console.error("Failed to set up dev auto-restart watcher:", e);
+	}
+}
 
 export function activate(context: vscode.ExtensionContext) {
-	// Build a descriptive User-Agent to help quantify API usage
+	// Build a descriptive User-Agent to help quantify API usage.  Who knows why.
 	const ext = vscode.extensions.getExtension("generic-copilot-providers");
 	const extVersion = ext?.packageJSON?.version ?? "unknown";
 	const vscodeVersion = vscode.version;
@@ -26,8 +64,8 @@ export function activate(context: vscode.ExtensionContext) {
 		})
 	);
 
-
 	// Command to refresh model configurations
+	// Not sure this fully works.
 	context.subscriptions.push(
 		vscode.commands.registerCommand("generic-copilot.refresh", async () => {
 			try {
@@ -72,7 +110,7 @@ export function activate(context: vscode.ExtensionContext) {
 			});
 
 			if (!selectedProvider) {
-				return; // user canceled
+				return;
 			}
 
 			// Get existing API key for selected provider
@@ -102,6 +140,8 @@ export function activate(context: vscode.ExtensionContext) {
 			vscode.window.showInformationMessage(`API key for ${selectedProvider} saved.`);
 		})
 	);
+
+	setupDevAutoRestart(context);
 }
 
 export function deactivate() {}
