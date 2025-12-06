@@ -23,25 +23,8 @@ import { resolveModelWithProvider } from "./provideModel";
 // Model ID parsing helper
 export interface ParsedModelId {
 	baseId: string;
-	configId?: string;
 }
 
-/**
- * Parse a model ID that may contain a configuration ID separator.
- * Format: "baseId::configId" or just "baseId"
- */
-export function parseModelId(modelId: string): ParsedModelId {
-	const parts = modelId.split("::");
-	if (parts.length >= 2) {
-		return {
-			baseId: parts[0],
-			configId: parts.slice(1).join("::"), // In case configId itself contains '::'
-		};
-	}
-	return {
-		baseId: modelId,
-	};
-}
 
 
 /**
@@ -220,9 +203,9 @@ export function convertLmModeltoModelItem(model: LanguageModelChatInformation): 
 	const config = vscode.workspace.getConfiguration();
 	const userModels = config.get<ModelItem[]>("generic-copilot.models", []);
 	// Parse the model ID to handle a potential provider prefix and config ID suffix
-	const parsedModelId = parseModelId(model.id);
+	const modelId = model.id
 	let providerHint: string | undefined;
-	let baseIdForMatch = parsedModelId.baseId;
+	let baseIdForMatch = modelId
 	const slashIdx = baseIdForMatch.indexOf("/");
 	if (slashIdx !== -1) {
 		providerHint = baseIdForMatch.slice(0, slashIdx).toLowerCase();
@@ -233,13 +216,9 @@ export function convertLmModeltoModelItem(model: LanguageModelChatInformation): 
 		const props = m.model_properties;
 		return (m.provider ?? props.owned_by)?.toLowerCase();
 	};
-	let um: ModelItem | undefined = userModels.find((m) => {
+	const userModel: ModelItem | undefined = userModels.find((m) => {
+		// Match the model ID
 		if (m.id !== baseIdForMatch) {
-			return false;
-		}
-		const configMatch =
-			(parsedModelId.configId && m.configId === parsedModelId.configId) || (!parsedModelId.configId && !m.configId);
-		if (!configMatch) {
 			return false;
 		}
 		if (!providerHint) {
@@ -249,7 +228,7 @@ export function convertLmModeltoModelItem(model: LanguageModelChatInformation): 
 		return decl ? decl === providerHint : false;
 	});
 
-	const resolvedModel = um ? resolveModelWithProvider(um) : um;
+	const resolvedModel = userModel ? resolveModelWithProvider(userModel) : userModel;
 	return resolvedModel;
 
 }

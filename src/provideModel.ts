@@ -23,7 +23,7 @@ export async function prepareLanguageModelChatInformation(
 	const config = vscode.workspace.getConfiguration();
 	const userModels = config.get<ModelItem[]>("generic-copilot.models", []);
 	const providers = config.get<ProviderConfig[]>("generic-copilot.providers", []);
-	registerInlineCompletionItemProvider(context)
+	registerInlineCompletionItemProvider(context);
 	let infos: LanguageModelChatInformation[];
 	if (userModels.length > 0) {
 		// Return user-provided models directly
@@ -41,32 +41,25 @@ export async function prepareLanguageModelChatInformation(
 
 
 			// Build canonical ID using provider key and raw model id
-			const modelId = resolved.configId
-				? `${props.owned_by}/${resolved.id}::${resolved.configId}`
-				: `${props.owned_by}/${resolved.id}`;
+			const modelId =  `${props.owned_by}/${resolved.id}`;
 			// Compose human-friendly display name as providerDisplayName/modelDisplayName[::configId]
 
 			const providerMeta = providers.find((p) => p.key === props.owned_by);
-			const providerDisplayName = providerMeta?.displayName || providerMeta?.key
+			const providerDisplayName = providerMeta?.displayName || providerMeta?.key;
 			const modelDisplayName = resolved.displayName || resolved.id;
-			const modelFullName = resolved.configId
-				? `${providerDisplayName}/${modelDisplayName}::${resolved.configId}`
-				: `${providerDisplayName}/${modelDisplayName}`;
+			const modelFullName = `${providerDisplayName}/${modelDisplayName}`;
 
 			return {
 				id: modelId,
 				name: modelFullName,
 				detail: providerDisplayName,
-				tooltip: resolved.configId
-					? `${props.owned_by}/${resolved.id}::${resolved.configId}`
-					: `${props.owned_by}/${resolved.id}`,
+				tooltip: modelId,
 				family: props.family ?? "generic",
 				version: "1.0.0",
 				maxInputTokens: maxInput,
 				maxOutputTokens: maxOutput,
 				capabilities: {
 					toolCalling: true,
-					imageInput: false,
 				},
 			} satisfies LanguageModelChatInformation;
 		});
@@ -108,7 +101,6 @@ export function resolveModelWithProvider(model: ModelItem): ModelItem {
 		id: model.id,
 		displayName: model.displayName ?? model.id,
 		provider: provider.key,
-		configId: model.configId,
 		model_properties: {
 			...model.model_properties,
 			owned_by: provider.key,

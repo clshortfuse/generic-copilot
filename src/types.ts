@@ -41,11 +41,7 @@ export interface ModelItem {
 	 * If 'provider' field is specified, this value is inherited from the provider.
 	 */
 	provider: string;
-	/**
-	 * Configuration variant identifier for models that share the same base id.
-	 * This is a configuration-level attribute and not a model property.
-	 */
-	configId?: string;
+
 	model_properties: ModelProperties;
 	model_parameters: ModelParameters;
 }
@@ -98,6 +94,7 @@ export interface ExtendedDelta extends OpenAI.Chat.Completions.ChatCompletionChu
 	],
 }
 
+// eslint-disable-next-line @typescript-eslint/consistent-indexed-object-style
 export interface ExtendedOpenAIRequest extends OpenAI.ChatCompletionCreateParamsStreaming {
 	[key: string]: any;
 }

@@ -124,8 +124,7 @@ export class ChatModelProvider implements LanguageModelChatProvider {
 		try {
 
 			const stream = await openai.chat.completions.create(openAIRequest);
-			// const thinkParser = new ThinkTagParser();
-			// const toolCallStates = new Map<number, ToolCallAccumulator>();
+
 			const toolCallStates = new Map<number, ToolCallAccumulator>();
 			for await (const chunk of stream) {
 				if (token.isCancellationRequested) {
