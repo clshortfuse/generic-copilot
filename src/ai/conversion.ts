@@ -86,7 +86,7 @@ export function LM2VercelMessage(
     // Fallback for unknown message types - treat as user message with empty content
     return {
       role: "user" as const,
-      content: "",
+      content: message.content,
     } as UserModelMessage;
   });
 }
