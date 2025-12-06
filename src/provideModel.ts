@@ -1,6 +1,5 @@
 import * as vscode from "vscode";
 import { CancellationToken, LanguageModelChatInformation } from "vscode";
-import { registerInlineCompletionItemProvider } from "./fim/fimProvider";
 import type { ModelItem, ProviderConfig } from "./types";
 
 const DEFAULT_CONTEXT_LENGTH = 128000;
@@ -23,7 +22,6 @@ export async function prepareLanguageModelChatInformation(
 	const config = vscode.workspace.getConfiguration();
 	const userModels = config.get<ModelItem[]>("generic-copilot.models", []);
 	const providers = config.get<ProviderConfig[]>("generic-copilot.providers", []);
-	registerInlineCompletionItemProvider(context);
 	let infos: LanguageModelChatInformation[];
 	if (userModels.length > 0) {
 		// Return user-provided models directly
@@ -44,8 +42,8 @@ export async function prepareLanguageModelChatInformation(
 			const modelId =  `${props.owned_by}/${resolved.id}`;
 			// Compose human-friendly display name as providerDisplayName/modelDisplayName[::configId]
 
-			const providerMeta = providers.find((p) => p.key === props.owned_by);
-			const providerDisplayName = providerMeta?.displayName || providerMeta?.key;
+			const providerMeta = providers.find((p) => p.id === props.owned_by);
+			const providerDisplayName = providerMeta?.displayName || providerMeta?.id;
 			const modelDisplayName = resolved.displayName || resolved.id;
 			const modelFullName = `${providerDisplayName}/${modelDisplayName}`;
 
@@ -90,7 +88,7 @@ export function resolveModelWithProvider(model: ModelItem): ModelItem {
 	const providers = config.get<ProviderConfig[]>("generic-copilot.providers", []);
 
 	// Find the referenced provider
-	const provider = providers.find((p) => p.key === providerRef);
+	const provider = providers.find((p) => p.id === providerRef);
 	if (!provider) {
 		console.error(`[Generic Compatible Model Provider] Provider '${providerRef}' not found in configuration`);
 		return model;
@@ -100,11 +98,12 @@ export function resolveModelWithProvider(model: ModelItem): ModelItem {
 	const resolved: ModelItem = {
 		id: model.id,
 		displayName: model.displayName ?? model.id,
-		provider: provider.key,
+		provider: provider.id,
 		model_properties: {
 			...model.model_properties,
-			owned_by: provider.key,
+			owned_by: provider.id,
 		},
+		slug: model.slug,
 		model_parameters: { ...model.model_parameters },
 	};
 

@@ -90,7 +90,7 @@ export function activate(context: vscode.ExtensionContext) {
 			// Extract unique providers from models (with resolution) and configured providers
 
 			const providersFromConfig = configuredProviders
-				.map((p) => p.key.toLowerCase())
+				.map((p) => p.id.toLowerCase())
 				.filter((p) => p && p.trim() !== "");
 
 			// Combine and deduplicate all providers

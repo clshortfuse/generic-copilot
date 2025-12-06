@@ -1,16 +1,11 @@
-import OpenAI from 'openai';
+import { LanguageModelChatRequestMessage } from "vscode";
+import { GenerateTextResult, ToolSet } from "ai";
 /**
  * Parameters sent to the model API in the request body
  */
 export interface ModelParameters {
 	// Allow null so user can explicitly disable sending this parameter (fall back to provider default)
 	temperature?: number | null;
-
-	/**
-	 * Extra configuration parameters sent to the API.
-	 * This allows users to add any additional parameters they might need
-	 * without modifying the core interface. Unknown keys are only allowed here.
-	 */
 	extra?: Record<string, unknown>;
 }
 
@@ -35,11 +30,8 @@ export interface ModelProperties {
  */
 export interface ModelItem {
 	id: string;
+	slug: string;
 	displayName?: string;
-	/**
-	 * Model provider. Can be overridden by provider reference.
-	 * If 'provider' field is specified, this value is inherited from the provider.
-	 */
 	provider: string;
 
 	model_properties: ModelProperties;
@@ -47,81 +39,26 @@ export interface ModelItem {
 }
 
 
+export type VercelType = "openrouter";
 
-/**
- * Response envelope for the router models listing.
- */
-export interface ModelsResponse {
-	object: string;
-	data: ModelItem[];
-}
 
-/**
- * Buffer used to accumulate streamed tool call parts until arguments are valid JSON.
- */
-export interface ToolCallBuffer {
-	id?: string;
-	name?: string;
-	args: string;
-}
-
-export type VercelType = "openai" | "anthropic" | "gemini" | "custom";
-/**
- * Provider configuration that can be inherited by models
- */
 export interface ProviderConfig {
-	/** Canonical provider key (lowercase, used as owned_by and for API key storage) */
-	key: string;
+	/** Canonical provider id (lowercase, used as owned_by and for API key storage) */
+	id: string;
+	/** API key for authenticating with the provider */
+	apiKey: string;
 	/** Display name for the provider */
 	displayName?: string;
 	/** Base URL for the provider's API endpoint */
-	baseUrl: string;
+	baseUrl?: string;
 	/** Custom HTTP headers for all requests */
 	headers?: Record<string, string>;
 	/** Type of the provider for vercel handling */
-	vercelType: VercelType
-
+	vercelType: VercelType;
 }
-
-export interface ExtendedDelta extends OpenAI.Chat.Completions.ChatCompletionChunk.Choice.Delta {
-	reasoning_content?: string,
-	reasoning?: string,
-	reasoning_details?: [
-		{
-			type: string,
-			text: string,
-			id: string,
-			format: string,
-			index: number
-		},
-	],
-}
-
-// eslint-disable-next-line @typescript-eslint/consistent-indexed-object-style
-export interface ExtendedOpenAIRequest extends OpenAI.ChatCompletionCreateParamsStreaming {
-	[key: string]: any;
-}
-
-export interface OpenAITool {
-	type: "function";
-	function: { name: string; description?: string; parameters?: object };
-}
-
-export interface ToolCallAccumulator {
-	id?: string;
-	name?: string;
-	argumentsBuffer: string;
-	emitted: boolean;
-}
-
-export type ThinkSegment =
-	| { kind: "text"; value: string }
-	| { kind: "thinking"; value: string };
-
-export type ModelDetails = {
-	modelApiKey: string | undefined
+export interface ProviderModelConfig {
+	providerConfig: ProviderConfig;
 	modelItem: ModelItem
-	baseUrl: string
-	headers?: Record<string, string>
-	vercelType: VercelType
 }
+
+
