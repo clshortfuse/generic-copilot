@@ -70,8 +70,6 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.commands.registerCommand("generic-copilot.refresh", async () => {
 			try {
 				vscode.lm.registerLanguageModelChatProvider("generic-copilot", provider);
-				// Also refresh the sidebar
-				//sidebarProvider.refresh();
 				vscode.window.showInformationMessage("GenericCopilot model configurations refreshed.");
 			} catch (err) {
 				const msg = err instanceof Error ? err.message : String(err);
