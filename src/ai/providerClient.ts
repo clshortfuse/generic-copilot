@@ -68,13 +68,19 @@ export abstract class ProviderClient {
 			// We need to handle fullStream to get tool calls
 			for await (const part of result.fullStream) {
 				if (part.type === "reasoning-delta") {
+					console.log("Reasoning delta part:", part);
 					progress.report(new LanguageModelThinkingPart(part.text));
 				} else if (part.type === "text-delta") {
+					console.log("Text delta part:", part);
 					progress.report(new LanguageModelTextPart(part.text));
 				} else if (part.type === "tool-call") {
 					const normalizedInput = normalizeToolInputs(part.toolName, part.input);
 					const toolCall = new LanguageModelToolCallPart(part.toolCallId, part.toolName, normalizedInput as object);
+					console.log("Tool call part:", toolCall);
 					progress.report(toolCall);
+				}
+				else {
+					console.debug("Unknown part type received from stream:", part);
 				}
 			}
 		} catch (error) {

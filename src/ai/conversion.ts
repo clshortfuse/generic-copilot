@@ -22,7 +22,7 @@ import {
 
 // Converts VS Code tools to AI SDK tool format
 // borrowed and adapted from https://github.com/jaykv/modelbridge/blob/main/src/provider.ts (MIT License)
-export function LM2VercelTool(options: ProvideLanguageModelChatResponseOptions): Record<string, any>| undefined {
+export function LM2VercelTool(options: ProvideLanguageModelChatResponseOptions): Record<string, any> | undefined {
 	const tools: Record<string, any> = {};
 	if (options.tools) {
 		for (const vsTool of options.tools) {
@@ -33,7 +33,7 @@ export function LM2VercelTool(options: ProvideLanguageModelChatResponseOptions):
 			});
 		}
 	}
-  return Object.keys(tools).length > 0 ? tools : undefined;
+	return Object.keys(tools).length > 0 ? tools : undefined;
 }
 
 /**
@@ -58,82 +58,109 @@ export function normalizeToolInputs(toolName: string, input: unknown): unknown {
 	return input;
 }
 
+/**
+ * Converts tool result content to a string.
+ * Handles various formats:
+ * - string: returned as-is
+ * - object with .value property: returns the value (which may be a string or object)
+ * - object with .text property: returns the text
+ * - other objects: stringified as JSON
+ * - arrays: converted to array of stringified content elements
+ */
+export function convertToolResultToString(content: unknown): string {
+	// Handle string case
+	if (typeof content === "string") {
+		return content;
+	}
+
+	// Handle object case
+	if (typeof content === "object" && content !== null) {
+		const obj = content as Record<string, unknown>;
+
+		// Check for .value property (may itself be a string or object)
+		if ("value" in obj) {
+			const value = obj.value;
+			if (typeof value === "string") {
+				return value;
+			}
+			if (typeof value === "object") {
+				return JSON.stringify(value, null, 2);
+			}
+			return String(value);
+		}
+
+		// Check for .text property
+		if ("text" in obj) {
+			const text = obj.text;
+			if (typeof text === "string") {
+				return text;
+			}
+			return JSON.stringify(text, null, 2);
+		}
+
+		// Fallback: stringify the object
+		return JSON.stringify(obj, null, 2);
+	}
+
+	// Handle arrays
+	if (Array.isArray(content)) {
+		return content.map((item) => convertToolResultToString(item)).join("\n");
+	}
+
+	// Fallback for primitives
+	return String(content);
+}
+
 // Converts VS Code LanguageModelChatRequestMessage array to AI SDK ModelMessage array
 // borrowed and adapted from https://github.com/jaykv/modelbridge/blob/main/src/provider.ts (MIT License)
 export function LM2VercelMessage(messages: readonly LanguageModelChatRequestMessage[]): ModelMessage[] {
-	const messagesPayload = messages.map((message) => {
-		const toolResults: ToolResultPart[] = [];
-		const assistantParts: Array<TextPart | ToolCallPart | ReasoningOutput> = [];
-		const userParts: TextPart[] = [];
+	const messagesPayload: ModelMessage[] = [];
 
-		for (const part of message.content) {
-			if (part instanceof LanguageModelToolResultPart) {
-				// VS Code tool results do not carry the tool name, so use a safe fallback.
-				toolResults.push({
-					type: "tool-result",
-					toolCallId: part.callId,
-					toolName: (part as { name?: string }).name ?? "unknown",
-					output: {
-            type: 'text',
-            value: part.content[0] as string
-          }
-        });
-				continue;
-			}
-
-			if (part instanceof LanguageModelToolCallPart) {
-				assistantParts.push({
-					type: "tool-call",
-					toolCallId: part.callId,
-					toolName: part.name,
-					input: part.input,
-				});
-				continue;
-			}
-
-			if (part instanceof LanguageModelThinkingPart) {
-				const text = Array.isArray(part.value) ? part.value.join("") : part.value;
-				assistantParts.push({ type: "reasoning", text });
-				continue;
-			}
-
-			if (part instanceof LanguageModelTextPart) {
-				const textPart: TextPart = { type: "text", text: part.value };
-				if (message.role === LanguageModelChatMessageRole.User) {
-					userParts.push(textPart);
-				} else {
-					assistantParts.push(textPart);
-				}
-				continue;
-			}
-
-			// Unknown part: stringify into text to keep payload valid.
-			const fallbackText: TextPart = { type: "text", text: JSON.stringify(part) };
-			if (message.role === LanguageModelChatMessageRole.User) {
-				userParts.push(fallbackText);
-			} else {
-				assistantParts.push(fallbackText);
-			}
-		}
-
+	for (const message of messages) {
 		if (message.role === LanguageModelChatMessageRole.User) {
-			const content = userParts.length === 1 ? userParts[0].text : userParts;
-			return {
-				role: "user",
-				content,
-			} as UserModelMessage;
+			const textParts: string[] = [];
+			const toolResults: ToolResultPart[] = [];
+
+			for (const part of message.content) {
+				if (part instanceof LanguageModelToolResultPart) {
+					toolResults.push({
+						type: "tool-result",
+						toolCallId: part.callId,
+						toolName: (part as { name?: string }).name ?? "unknown",
+						output: { type: "text", value: convertToolResultToString(part.content[0]) },
+					});
+				} else if (part instanceof LanguageModelTextPart) {
+					textParts.push(part.value);
+				}
+			}
+
+			if (toolResults.length > 0) {
+				messagesPayload.push({ role: "tool", content: toolResults } as ToolModelMessage);
+			} else {
+				messagesPayload.push({ role: "user", content: textParts.join("\n") } as UserModelMessage);
+			}
+		} else {
+			const contentParts: (TextPart | ToolCallPart | ReasoningOutput)[] = [];
+
+			for (const part of message.content) {
+				if (part instanceof LanguageModelToolCallPart) {
+					contentParts.push({
+						type: "tool-call",
+						toolCallId: part.callId,
+						toolName: part.name,
+						input: part.input,
+					});
+				} else if (part instanceof LanguageModelThinkingPart) {
+					const text = Array.isArray(part.value) ? part.value.join("") : part.value;
+					contentParts.push({ type: "reasoning", text });
+				} else if (part instanceof LanguageModelTextPart) {
+					contentParts.push({ type: "text", text: part.value });
+				}
+			}
+
+			messagesPayload.push({ role: "assistant", content: contentParts } as AssistantModelMessage);
 		}
-
-		const assistantContent = assistantParts.length === 1 && assistantParts[0].type === "text"
-			? assistantParts[0].text
-			: assistantParts;
-
-		return {
-			role: "assistant",
-			content: assistantContent,
-		} as AssistantModelMessage;
-	});
-
+	}
 	return messagesPayload;
 }
 

@@ -1,6 +1,7 @@
 import { ProviderModelConfig, ProviderConfig, VercelType,  } from "../types";
 import { ProviderClient } from "./providerClient";
 import { OpenRouterProviderClient } from './openrouter';
+import { OpenAIProviderClient } from "./openai";
 
 export class ProviderClientFactory {
   private static instances: Map<string, ProviderClient> = new Map();
@@ -17,6 +18,9 @@ export class ProviderClientFactory {
 	switch (providerModelConfig.providerConfig.vercelType as VercelType) {
 	  case 'openrouter':
 		client = new OpenRouterProviderClient(providerModelConfig.providerConfig, providerModelConfig.apiKey);
+		break;
+	  case 'openai':
+		client = new OpenAIProviderClient(providerModelConfig.providerConfig, providerModelConfig.apiKey);
 		break;
 	  default:
 		throw new Error(`Unsupported provider type: ${providerModelConfig.providerConfig.vercelType}`);
