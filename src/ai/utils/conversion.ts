@@ -171,7 +171,7 @@ export function LM2VercelMessage(messages: readonly LanguageModelChatRequestMess
 						toolName: part.name,
 						input: part.input,
 					};
-					
+
 					// Retrieve providerMetadata from cache (e.g., Google's thoughtSignature)
 					// The metadata was stored by the provider's generateStreamingResponse
 					// Note: We do NOT delete the cache entry here because the same assistant message
@@ -180,7 +180,7 @@ export function LM2VercelMessage(messages: readonly LanguageModelChatRequestMess
 					if (cachedMetadata?.providerMetadata) {
 						toolCallPart.providerMetadata = cachedMetadata.providerMetadata;
 					}
-					
+
 					contentParts.push(toolCallPart);
 				} else if (part instanceof LanguageModelThinkingPart) {
 					const text = Array.isArray(part.value) ? part.value.join("") : part.value;
@@ -193,6 +193,7 @@ export function LM2VercelMessage(messages: readonly LanguageModelChatRequestMess
 			messagesPayload.push({ role: "assistant", content: contentParts } as AssistantModelMessage);
 		}
 	}
+	console.log("Converted messages payload:", JSON.stringify(messagesPayload, null, 2));
 	return messagesPayload;
 }
 
