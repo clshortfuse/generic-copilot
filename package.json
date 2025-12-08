@@ -44,6 +44,24 @@
 				"managementCommand": "generic-copilot.setProviderApikey"
 			}
 		],
+		"views": {
+			"generic-copilot-explorer": [
+				{
+					"id": "generic-copilot.consoleView",
+					"name": "LLM Console",
+					"type": "webview"
+				}
+			]
+		},
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"id": "generic-copilot-explorer",
+					"title": "Generic Copilot",
+					"icon": "assets/logo.png"
+				}
+			]
+		},
 		"commands": [
 			{
 				"command": "generic-copilot.openConfiguration",
