@@ -19,15 +19,18 @@ import {
 	tool,
 	jsonSchema,
 	SystemModelMessage,
+	type JSONValue,
 } from "ai";
 import { MetadataCache } from "./metadataCache";
 //import { LanguageModelChatMessageRoleExtended, LanguageModelChatMessageRoleExtended as LanguageModelChatMessageRoleExtendedType } from "../../types";
 
 /**
- * Tool call part with providerMetadata for conversion to AI SDK format.
+ * Tool call part with providerOptions for sending to AI SDK providers.
+ * providerOptions is used for INPUT (what we send to providers),
+ * while providerMetadata is used for OUTPUT (what we receive from providers).
  */
-interface ToolCallPartWithMetadata extends ToolCallPart {
-	providerMetadata?: Record<string, Record<string, unknown>>;
+interface ToolCallPartWithProviderOptions extends ToolCallPart {
+	providerOptions?: Record<string, Record<string, JSONValue>>;
 }
 
 // Converts VS Code tools to AI SDK tool format
@@ -165,7 +168,7 @@ export function LM2VercelMessage(messages: readonly LanguageModelChatRequestMess
 
 			for (const part of message.content) {
 				if (part instanceof LanguageModelToolCallPart) {
-					const toolCallPart: ToolCallPartWithMetadata = {
+					const toolCallPart: ToolCallPartWithProviderOptions = {
 						type: "tool-call",
 						toolCallId: part.callId,
 						toolName: part.name,
@@ -176,9 +179,12 @@ export function LM2VercelMessage(messages: readonly LanguageModelChatRequestMess
 					// The metadata was stored by the provider's generateStreamingResponse
 					// Note: We do NOT delete the cache entry here because the same assistant message
 					// will be converted multiple times as part of conversation history in future turns
+					// 
+					// IMPORTANT: We use providerOptions (not providerMetadata) when SENDING to providers
+					// providerMetadata is what we RECEIVE from providers, providerOptions is what we SEND
 					const cachedMetadata = metadataCache.get(part.callId);
 					if (cachedMetadata?.providerMetadata) {
-						toolCallPart.providerMetadata = cachedMetadata.providerMetadata;
+						toolCallPart.providerOptions = cachedMetadata.providerMetadata;
 					}
 
 					contentParts.push(toolCallPart);

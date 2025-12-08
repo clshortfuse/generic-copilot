@@ -6,6 +6,8 @@
  * LanguageModelToolCallPart instances when they're sent back in conversation history.
  */
 
+import type { JSONValue } from "ai";
+
 /**
  * Metadata associated with a tool call.
  * Contains provider-specific information that must be preserved across turns.
@@ -21,7 +23,7 @@
  * }
  */
 export interface ToolCallMetadata {
-	providerMetadata?: Record<string, Record<string, unknown>>;
+	providerMetadata?: Record<string, Record<string, JSONValue>>;
 }
 
 /**
