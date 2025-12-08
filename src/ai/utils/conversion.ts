@@ -174,11 +174,11 @@ export function LM2VercelMessage(messages: readonly LanguageModelChatRequestMess
 					
 					// Retrieve providerMetadata from cache (e.g., Google's thoughtSignature)
 					// The metadata was stored by the provider's generateStreamingResponse
+					// Note: We do NOT delete the cache entry here because the same assistant message
+					// will be converted multiple times as part of conversation history in future turns
 					const cachedMetadata = metadataCache.get(part.callId);
 					if (cachedMetadata?.providerMetadata) {
 						toolCallPart.providerMetadata = cachedMetadata.providerMetadata;
-						// Clean up the cache after successful retrieval to prevent memory accumulation
-						metadataCache.delete(part.callId);
 					}
 					
 					contentParts.push(toolCallPart);

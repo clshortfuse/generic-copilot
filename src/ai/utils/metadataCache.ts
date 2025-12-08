@@ -27,9 +27,10 @@ export interface ToolCallMetadata {
 /**
  * Singleton class for caching tool call metadata across conversation turns.
  * 
- * Memory management: The cache is cleaned up automatically when metadata is consumed
- * during message conversion. Entries are removed after being retrieved to prevent
- * indefinite growth.
+ * Memory management: The cache maintains metadata for the lifetime of tool calls
+ * in the conversation history. Entries persist across multiple conversions since
+ * the same assistant messages are sent repeatedly as part of conversation context.
+ * The cache enforces a maximum size limit to prevent unbounded growth.
  */
 export class MetadataCache {
 	private static instance: MetadataCache;
