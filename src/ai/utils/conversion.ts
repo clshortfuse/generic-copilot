@@ -20,15 +20,8 @@ import {
 	jsonSchema,
 	SystemModelMessage,
 } from "ai";
+import { MetadataCache } from "./metadataCache";
 //import { LanguageModelChatMessageRoleExtended, LanguageModelChatMessageRoleExtended as LanguageModelChatMessageRoleExtendedType } from "../../types";
-
-/**
- * Extended LanguageModelToolCallPart that includes providerMetadata.
- * This allows us to store provider-specific metadata like Google's thoughtSignature.
- */
-export interface LanguageModelToolCallPartWithMetadata extends LanguageModelToolCallPart {
-	providerMetadata?: Record<string, Record<string, unknown>>;
-}
 
 /**
  * Tool call part with providerMetadata for conversion to AI SDK format.
@@ -168,6 +161,7 @@ export function LM2VercelMessage(messages: readonly LanguageModelChatRequestMess
 
 		if (message.role === LanguageModelChatMessageRole.Assistant) {
 			const contentParts: (TextPart | ToolCallPart | ReasoningOutput)[] = [];
+			const metadataCache = MetadataCache.getInstance();
 
 			for (const part of message.content) {
 				if (part instanceof LanguageModelToolCallPart) {
@@ -178,11 +172,11 @@ export function LM2VercelMessage(messages: readonly LanguageModelChatRequestMess
 						input: part.input,
 					};
 					
-					// Preserve providerMetadata if it exists (e.g., Google's thoughtSignature)
-					// The providerMetadata is attached to the part by the provider's generateStreamingResponse
-					const partWithMetadata = part as LanguageModelToolCallPartWithMetadata;
-					if (partWithMetadata.providerMetadata) {
-						toolCallPart.providerMetadata = partWithMetadata.providerMetadata;
+					// Retrieve providerMetadata from cache (e.g., Google's thoughtSignature)
+					// The metadata was stored by the provider's generateStreamingResponse
+					const cachedMetadata = metadataCache.get(part.callId);
+					if (cachedMetadata?.providerMetadata) {
+						toolCallPart.providerMetadata = cachedMetadata.providerMetadata;
 					}
 					
 					contentParts.push(toolCallPart);

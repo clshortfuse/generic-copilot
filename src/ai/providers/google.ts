@@ -11,8 +11,9 @@ import {
 	LanguageModelResponsePart2 as LanguageModelResponsePart,
 } from "vscode";
 import { streamText } from "ai";
-import { normalizeToolInputs, LanguageModelToolCallPartWithMetadata } from "../utils/conversion";
+import { normalizeToolInputs } from "../utils/conversion";
 import { MessageLogger, LoggedRequest, LoggedResponse } from "../utils/messageLogger";
+import { MetadataCache } from "../utils/metadataCache";
 
 export class GoogleProviderClient extends ProviderClient {
 	constructor(config: ProviderConfig, apiKey: string) {
@@ -42,6 +43,7 @@ export class GoogleProviderClient extends ProviderClient {
 		const messages = this.convertMessages(request);
 		const tools = this.convertTools(options);
 		const messageLogger = MessageLogger.getInstance();
+		const metadataCache = MetadataCache.getInstance();
 
 		// Log the incoming request as soon as possible.
 		const interactionId = messageLogger.addRequestResponse({
@@ -84,12 +86,14 @@ export class GoogleProviderClient extends ProviderClient {
 						part.toolCallId, 
 						part.toolName, 
 						normalizedInput as object
-					) as LanguageModelToolCallPartWithMetadata;
+					);
 					
-					// Store providerMetadata (including thoughtSignature) on the tool call part
-					// This metadata will be used later when converting messages back to the AI SDK format
+					// Store providerMetadata (including thoughtSignature) in cache
+					// This metadata will be retrieved later when converting messages back to the AI SDK format
 					if (part.providerMetadata) {
-						toolCall.providerMetadata = part.providerMetadata;
+						metadataCache.set(part.toolCallId, {
+							providerMetadata: part.providerMetadata
+						});
 					}
 					
 					responseLog.toolCallParts?.push(toolCall);
