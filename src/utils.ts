@@ -81,7 +81,7 @@ export function convertLmModeltoModelItem(model: LanguageModelChatInformation): 
  * @returns Array of API keys
  */
 export function parseApiKeys(stored: string): string[] {
-	if (!stored || !stored.trim()) {
+	if (!stored?.trim()) {
 		return [];
 	}
 	

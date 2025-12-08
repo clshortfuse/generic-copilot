@@ -14,9 +14,12 @@ import { parseApiKeys } from "./utils";
  * @returns A masked version showing only first and last few characters
  */
 function maskApiKey(key: string): string {
-	if (key.length <= 12) {
-		// For short keys, just show asterisks in the middle
-		return key.substring(0, 2) + '***' + key.substring(key.length - 2);
+	if (key.length <= 8) {
+		// For very short keys, show minimal information
+		return key.substring(0, 2) + '****' + key.substring(key.length - 2);
+	} else if (key.length <= 12) {
+		// For short keys, show first 3 and last 3
+		return key.substring(0, 3) + '***' + key.substring(key.length - 3);
 	}
 	// For longer keys, show first 8 and last 4 characters
 	return `${key.substring(0, 8)}...${key.substring(key.length - 4)}`;
@@ -213,11 +216,12 @@ export function activate(context: vscode.ExtensionContext) {
 				}
 
 				case "view": {
-					const maskedKeys = existingKeys.map((key, index) => 
-						`Key ${index + 1}: ${maskApiKey(key)}`
+					const keyList = existingKeys.map((key, index) => 
+						`  ${index + 1}. ${maskApiKey(key)}`
 					).join('\n');
+					const message = `API Keys for ${selectedProvider}:\n\nTotal: ${existingKeys.length} key(s)\n\n${keyList}`;
 					vscode.window.showInformationMessage(
-						`API Keys for ${selectedProvider} (${existingKeys.length}):\n\n${maskedKeys}`,
+						message,
 						{ modal: true }
 					);
 					break;
