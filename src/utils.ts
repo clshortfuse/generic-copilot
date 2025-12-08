@@ -104,7 +104,7 @@ export function parseApiKeys(stored: string): string[] {
  * @param keys Array of API keys
  * @returns A randomly selected API key
  */
-function selectRandomApiKey(keys: string[]): string | undefined {
+export function selectRandomApiKey(keys: string[]): string | undefined {
 	if (keys.length === 0) {
 		return undefined;
 	}

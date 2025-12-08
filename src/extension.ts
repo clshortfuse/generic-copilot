@@ -8,6 +8,20 @@ import { initStatusBar } from "./statusBar";
 import { ConsoleViewProvider } from "./consoleView";
 import { parseApiKeys } from "./utils";
 
+/**
+ * Mask an API key for display purposes
+ * @param key The API key to mask
+ * @returns A masked version showing only first and last few characters
+ */
+function maskApiKey(key: string): string {
+	if (key.length <= 12) {
+		// For short keys, just show asterisks in the middle
+		return key.substring(0, 2) + '***' + key.substring(key.length - 2);
+	}
+	// For longer keys, show first 8 and last 4 characters
+	return `${key.substring(0, 8)}...${key.substring(key.length - 4)}`;
+}
+
 function setupDevAutoRestart(context: vscode.ExtensionContext) {
 	if (context.extensionMode !== vscode.ExtensionMode.Development) {
 		return;
@@ -174,7 +188,7 @@ export function activate(context: vscode.ExtensionContext) {
 				case "remove": {
 					// Show masked keys for selection
 					const maskedKeys = existingKeys.map((key, index) => ({
-						label: `Key ${index + 1}: ${key.substring(0, 8)}...${key.substring(key.length - 4)}`,
+						label: `Key ${index + 1}: ${maskApiKey(key)}`,
 						index: index,
 					}));
 
@@ -200,7 +214,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 				case "view": {
 					const maskedKeys = existingKeys.map((key, index) => 
-						`Key ${index + 1}: ${key.substring(0, 8)}...${key.substring(key.length - 4)}`
+						`Key ${index + 1}: ${maskApiKey(key)}`
 					).join('\n');
 					vscode.window.showInformationMessage(
 						`API Keys for ${selectedProvider} (${existingKeys.length}):\n\n${maskedKeys}`,
