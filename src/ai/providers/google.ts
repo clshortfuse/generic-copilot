@@ -19,7 +19,7 @@ import { MessageLogger, LoggedRequest, LoggedResponse } from "../utils/messageLo
  * This allows us to store Google-specific metadata like thoughtSignature.
  */
 interface LanguageModelToolCallPartWithMetadata extends LanguageModelToolCallPart {
-	providerMetadata?: Record<string, Record<string, any>>;
+	providerMetadata?: Record<string, Record<string, unknown>>;
 }
 
 export class GoogleProviderClient extends ProviderClient {

@@ -24,7 +24,9 @@ import {
 
 // Converts VS Code tools to AI SDK tool format
 // borrowed and adapted from https://github.com/jaykv/modelbridge/blob/main/src/provider.ts (MIT License)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function LM2VercelTool(options: ProvideLanguageModelChatResponseOptions): Record<string, any> | undefined {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const tools: Record<string, any> = {};
 	if (options.tools) {
 		for (const vsTool of options.tools) {
@@ -154,6 +156,7 @@ export function LM2VercelMessage(messages: readonly LanguageModelChatRequestMess
 
 			for (const part of message.content) {
 				if (part instanceof LanguageModelToolCallPart) {
+					// eslint-disable-next-line @typescript-eslint/no-explicit-any
 					const toolCallPart: any = {
 						type: "tool-call",
 						toolCallId: part.callId,
@@ -163,6 +166,7 @@ export function LM2VercelMessage(messages: readonly LanguageModelChatRequestMess
 					
 					// Preserve providerMetadata if it exists (e.g., Google's thoughtSignature)
 					// The providerMetadata is attached to the part by the provider's generateStreamingResponse
+					// eslint-disable-next-line @typescript-eslint/no-explicit-any
 					const partWithMetadata = part as any;
 					if (partWithMetadata.providerMetadata) {
 						toolCallPart.providerMetadata = partWithMetadata.providerMetadata;
