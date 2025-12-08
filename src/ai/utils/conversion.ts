@@ -179,7 +179,7 @@ export function LM2VercelMessage(messages: readonly LanguageModelChatRequestMess
 					// The metadata was stored by the provider's generateStreamingResponse
 					// Note: We do NOT delete the cache entry here because the same assistant message
 					// will be converted multiple times as part of conversation history in future turns
-					// 
+					//
 					// IMPORTANT: We use providerOptions (not providerMetadata) when SENDING to providers
 					// providerMetadata is what we RECEIVE from providers, providerOptions is what we SEND
 					const cachedMetadata = metadataCache.get(part.callId);
@@ -199,7 +199,6 @@ export function LM2VercelMessage(messages: readonly LanguageModelChatRequestMess
 			messagesPayload.push({ role: "assistant", content: contentParts } as AssistantModelMessage);
 		}
 	}
-	console.log("Converted messages payload:", JSON.stringify(messagesPayload, null, 2));
 	return messagesPayload;
 }
 
