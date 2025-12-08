@@ -154,12 +154,21 @@ export function LM2VercelMessage(messages: readonly LanguageModelChatRequestMess
 
 			for (const part of message.content) {
 				if (part instanceof LanguageModelToolCallPart) {
-					contentParts.push({
+					const toolCallPart: any = {
 						type: "tool-call",
 						toolCallId: part.callId,
 						toolName: part.name,
 						input: part.input,
-					});
+					};
+					
+					// Preserve providerMetadata if it exists (e.g., Google's thoughtSignature)
+					// The providerMetadata is attached to the part by the provider's generateStreamingResponse
+					const partWithMetadata = part as any;
+					if (partWithMetadata.providerMetadata) {
+						toolCallPart.providerMetadata = partWithMetadata.providerMetadata;
+					}
+					
+					contentParts.push(toolCallPart);
 				} else if (part instanceof LanguageModelThinkingPart) {
 					const text = Array.isArray(part.value) ? part.value.join("") : part.value;
 					contentParts.push({ type: "reasoning", text });
