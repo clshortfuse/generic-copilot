@@ -77,3 +77,36 @@ button:hover {
   padding: 40px;
   color: var(--vscode-descriptionForeground);
 }
+
+/* Two-column console layout */
+.console-container {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.left-panel {
+  width: 220px;
+  flex: 0 0 220px;
+  border-right: none;
+  border-radius: 0;
+  padding: 8px 0 8px 8px;
+  background: transparent;
+}
+.right-panel {
+  flex: 1 1 auto;
+  border-left: 1px solid var(--vscode-panel-border);
+  padding-left: 12px;
+}
+.interaction-list { list-style: none; padding: 0; margin: 8px 0 0 0; }
+.interaction-list-item {
+  padding: 8px;
+  cursor: pointer;
+  border-radius: 4px;
+  margin-bottom: 6px;
+  border: none;
+}
+.interaction-list-item:hover { background: rgba(255,255,255,0.02); }
+.interaction-list-item.selected { background: rgba(80,130,180,0.08); border: none; box-shadow: none; }
+.interaction-list-item.selected::before { content: ''; display: inline-block; width: 4px; height: 100%; background: rgba(80,130,180,0.5); margin-right: 8px; vertical-align: middle; border-radius: 2px; }
+.interaction-list-title { font-weight: 600; font-size: 0.95em; }
+.interaction-list-meta { color: var(--vscode-descriptionForeground); font-size: 0.85em; }

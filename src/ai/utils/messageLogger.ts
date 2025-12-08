@@ -160,6 +160,13 @@ export class MessageLogger {
 	 * Generate a unique ID for an interaction
 	 */
 	private static generateId(): string {
-		return `interaction_${Date.now()}_${Math.random().toString(36)}`;
+		const d = new Date();
+		const hhmmss = d.toTimeString().slice(0, 8); // "HH:MM:SS"
+
+		// Use milliseconds as deterministic suffix
+		const ms = d.getMilliseconds(); // 0-999
+		const suffix = ms.toString(36).padStart(2, "0"); // 2 chars base36
+
+		return `${hhmmss}-${suffix}`;
 	}
 }
