@@ -22,6 +22,21 @@ import {
 } from "ai";
 //import { LanguageModelChatMessageRoleExtended, LanguageModelChatMessageRoleExtended as LanguageModelChatMessageRoleExtendedType } from "../../types";
 
+/**
+ * Extended LanguageModelToolCallPart that includes providerMetadata.
+ * This allows us to store provider-specific metadata like Google's thoughtSignature.
+ */
+export interface LanguageModelToolCallPartWithMetadata extends LanguageModelToolCallPart {
+	providerMetadata?: Record<string, Record<string, unknown>>;
+}
+
+/**
+ * Tool call part with providerMetadata for conversion to AI SDK format.
+ */
+interface ToolCallPartWithMetadata extends ToolCallPart {
+	providerMetadata?: Record<string, Record<string, unknown>>;
+}
+
 // Converts VS Code tools to AI SDK tool format
 // borrowed and adapted from https://github.com/jaykv/modelbridge/blob/main/src/provider.ts (MIT License)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -156,8 +171,7 @@ export function LM2VercelMessage(messages: readonly LanguageModelChatRequestMess
 
 			for (const part of message.content) {
 				if (part instanceof LanguageModelToolCallPart) {
-					// eslint-disable-next-line @typescript-eslint/no-explicit-any
-					const toolCallPart: any = {
+					const toolCallPart: ToolCallPartWithMetadata = {
 						type: "tool-call",
 						toolCallId: part.callId,
 						toolName: part.name,
@@ -166,8 +180,7 @@ export function LM2VercelMessage(messages: readonly LanguageModelChatRequestMess
 					
 					// Preserve providerMetadata if it exists (e.g., Google's thoughtSignature)
 					// The providerMetadata is attached to the part by the provider's generateStreamingResponse
-					// eslint-disable-next-line @typescript-eslint/no-explicit-any
-					const partWithMetadata = part as any;
+					const partWithMetadata = part as LanguageModelToolCallPartWithMetadata;
 					if (partWithMetadata.providerMetadata) {
 						toolCallPart.providerMetadata = partWithMetadata.providerMetadata;
 					}

@@ -11,16 +11,8 @@ import {
 	LanguageModelResponsePart2 as LanguageModelResponsePart,
 } from "vscode";
 import { streamText } from "ai";
-import { normalizeToolInputs } from "../utils/conversion";
+import { normalizeToolInputs, LanguageModelToolCallPartWithMetadata } from "../utils/conversion";
 import { MessageLogger, LoggedRequest, LoggedResponse } from "../utils/messageLogger";
-
-/**
- * Extended LanguageModelToolCallPart that includes providerMetadata.
- * This allows us to store Google-specific metadata like thoughtSignature.
- */
-interface LanguageModelToolCallPartWithMetadata extends LanguageModelToolCallPart {
-	providerMetadata?: Record<string, Record<string, unknown>>;
-}
 
 export class GoogleProviderClient extends ProviderClient {
 	constructor(config: ProviderConfig, apiKey: string) {
@@ -87,7 +79,12 @@ export class GoogleProviderClient extends ProviderClient {
 					progress.report(new LanguageModelTextPart(part.text));
 				} else if (part.type === "tool-call") {
 					const normalizedInput = normalizeToolInputs(part.toolName, part.input);
-					const toolCall = new LanguageModelToolCallPart(part.toolCallId, part.toolName, normalizedInput as object) as LanguageModelToolCallPartWithMetadata;
+					// Type assertion is necessary because normalizeToolInputs returns unknown
+					const toolCall = new LanguageModelToolCallPart(
+						part.toolCallId, 
+						part.toolName, 
+						normalizedInput as object
+					) as LanguageModelToolCallPartWithMetadata;
 					
 					// Store providerMetadata (including thoughtSignature) on the tool call part
 					// This metadata will be used later when converting messages back to the AI SDK format
