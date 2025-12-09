@@ -1,5 +1,10 @@
 # Changelog
 
+## [v0.13.2] - 2025-12-09
+
+- Refactored provider 'key' to 'id' to be slightly less confusing (#25) (724e932)
+
+
 ## [v0.13.1] - 2025-12-09
 
 - fix: fixed display of API keys to use password type (#24) (d129816)
