@@ -24,6 +24,6 @@
 		".vscode-test",
 		"webview-ui",
 		"src/test",
-		"testspace/*"
+		"testspace/**/*"
 	]
 }
