@@ -1,5 +1,10 @@
 # Changelog
 
+## [v0.13.6] - 2025-12-10
+
+- Refactor code generation logic: replace 'generateObject' with 'generateText' and enhance completion system instruction for clarity. Improve handling of empty insert text cases in inline completion items. (493d634)
+
+
 ## [v0.13.5] - 2025-12-09
 
 - Add performance metrics to response logging and status bar updates (50a2fda)
