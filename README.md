@@ -83,6 +83,11 @@ Repeat for each provider. Keys are stored securely in VS Code's secret storage a
 
 Detailed configuration instructions, including schema definitions, examples, and advanced settings, can be found in [docs/CONFIGURATION.md](docs/CONFIGURATION.md).
 
+## 📖 Console Guide
+
+Detailed description of the Generic Copilot Console can be found in [docs/CONSOLE.md](docs/CONSOLE.md).
+
+
 ---
 
 ## 📄 License
