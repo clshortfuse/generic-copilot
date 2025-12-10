@@ -63,7 +63,6 @@ export abstract class ProviderClient {
 		options: ProvideLanguageModelChatResponseOptions,
 		config: ModelItem,
 		progress: Progress<LanguageModelResponsePart>,
-		maximumRetries: number = 3
 	): Promise<void> {
 		const languageModel = this.getLanguageModel(config.slug);
 		const messages = this.convertMessages(request);
@@ -82,7 +81,8 @@ export abstract class ProviderClient {
 		} as LoggedRequest);
 
 		let lastError: any;
-		for (let attempt = 0; attempt < maximumRetries; attempt++) {
+		const maxRetries = config.retries ?? 3;
+		for (let attempt = 0; attempt < maxRetries; attempt++) {
 			try {
 				logger.debug(`Streaming response started for model "${config.id}" with provider "${this.config.id}"`);
 				let streamError: any;
@@ -135,7 +135,9 @@ export abstract class ProviderClient {
 			}
 		}
 		logger.error("Chat request failed after retries:", lastError);
-		//const message = lastError instanceof Error ? lastError.message : String(lastError);
+		vscode.window.showErrorMessage(
+			`Chat request failed after multiple attempts: ${lastError instanceof Error ? lastError.message : String(lastError)}`
+		);
 
 	}
 
