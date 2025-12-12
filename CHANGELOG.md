@@ -1,5 +1,15 @@
 # Changelog
 
+## [v0.15.0] - 2025-12-12
+
+- claude docs (60a0311)
+- Add support for claude code (c2d7133)
+- WIP (02d3734)
+- Minor tsconfig change (f29cc60)
+- Enhance cache persistence: implement loading and saving of metadata caches across extension restarts (12c28cf)
+- Add VS Code settings configuration schema with edit-in-JSON support (#38) (3611ba0)
+
+
 ## [v0.14.0] - 2025-12-11
 
 - Enhance metadata caching and add previousResponseId support (#37) (0ba3209)
