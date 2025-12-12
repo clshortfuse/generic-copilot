@@ -16,7 +16,7 @@
         "allowSyntheticDefaultImports": true,
         "moduleResolution": "node",
         "resolveJsonModule": true,
-        "baseUrl": ".",
+        "paths": {"*": ["./*"]},
         "noEmit": true
     },
     "include": [
