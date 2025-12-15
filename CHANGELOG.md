@@ -1,5 +1,11 @@
 # Changelog
 
+## [v0.16.0] - 2025-12-15
+
+- Add DeepSeek provider support and update dependencies.  Specifically enables reasoning trace retention for deepseek reasoner. (ce3bea8)
+- Update inputSchema to ensure object type validation (d17c38e)
+
+
 ## [v0.15.0] - 2025-12-12
 
 - claude docs (60a0311)
