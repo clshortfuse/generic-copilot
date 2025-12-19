@@ -1,5 +1,16 @@
 # Changelog
 
+## [v0.18.0] - 2025-12-18
+
+- Updated Providers (226f33e)
+- Update docs and simplify (a922ff1)
+- Basics working! (3b19549)
+- chore: release version 0.17.0 (b7f4379)
+- Add support for Anthropic provider and update related documentation and types (d2ed559)
+- Simplify copilot-instructions.md to reference AGENTS.md instead of duplicating content (91794e7)
+- Add .github/copilot-instructions.md following GitHub best practices (733eac0)
+
+
 ## [v0.17.0] - 2025-12-18
 
 - Add support for Anthropic provider and update related documentation and types (b566041)
