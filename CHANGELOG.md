@@ -1,5 +1,10 @@
 # Changelog
 
+## [v0.18.8] - 2025-12-22
+
+- feat: add Zai provider support and update documentation (0c10641)
+
+
 ## [v0.18.7] - 2025-12-21
 
 - feat: implement ephemeral cache control for CCV2 messages and tools. (dc69b6b)
