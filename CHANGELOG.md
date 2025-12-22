@@ -1,5 +1,12 @@
 # Changelog
 
+## [v0.18.7] - 2025-12-21
+
+- feat: implement ephemeral cache control for CCV2 messages and tools. (dc69b6b)
+- chore: release version 0.18.6 (2cd3a6e)
+- feat: add input caching for Anthropic models to improve performance and reduce costs (c2b2f2d)
+
+
 ## [v0.18.6] - 2025-12-21
 
 - No changes detected (manual release).
