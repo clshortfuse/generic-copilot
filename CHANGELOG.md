@@ -1,5 +1,10 @@
 # Changelog
 
+## [v0.18.9] - 2025-12-24
+
+- feat: update cache control to target second-to-last user message for Anthropic providers. (156689c)
+
+
 ## [v0.18.8] - 2025-12-22
 
 - feat: add Zai provider support and update documentation (0c10641)
