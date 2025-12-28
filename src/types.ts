@@ -31,6 +31,14 @@ export interface ModelProperties {
 	 * Valid values: "google", "openai", "anthropic", "openai-compatible"
 	 */
 	litellm_api_type?: "google" | "openai" | "anthropic" | "openai-compatible";
+	/**
+	 * Indicates whether this model supports image inputs.
+	 * When true, the model will be registered with imageInput capability enabled,
+	 * allowing it to accept LanguageModelDataPart containing images in chat messages.
+	 *
+	 * Defaults to false if not specified.
+	 */
+	supports_images?: boolean;
 }
 
 /**

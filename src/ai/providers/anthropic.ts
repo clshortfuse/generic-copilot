@@ -91,9 +91,10 @@ export function addAnthropicCacheControlToLastSystemMessage(
  * 1. Informs the server of the last cached message (second-to-last)
  * 2. Pre-caches the new message (last) for the next turn
  *
- * IMPORTANT: Cache control is ONLY added to the LAST content part of each target message.
- * For messages with mixed content (e.g., text + tool-results), the cache control is added to
- * the last part regardless of type (text, tool-result, etc.).
+ * IMPORTANT: Cache control is ONLY added to the LAST TEXT content part of each target message.
+ * For messages with mixed content (e.g., text + images), the cache control is added to
+ * the last text part. If a message contains no text parts (e.g., image-only), cache control
+ * is skipped for that message as Anthropic only supports cache control on text content.
  *
  * If there's only one relevant message, only that message is marked.
  * If there are two, both are marked (one for next turn, one as boundary).
@@ -133,24 +134,38 @@ export function addAnthropicCacheControlToRecentUserMessages(
 		if (targetIndices.has(index) && m.content !== null) {
 			// Handle messages with array content (multiple content parts)
 			if (Array.isArray(m.content)) {
-				const newContent = m.content.map((part: any, partIndex: number) => {
-					// Only add providerOptions cacheControl to the LAST part (regardless of type)
-					if (partIndex === (m.content as any[]).length - 1) {
-						return {
-							...part,
-							providerOptions: {
-								...part.providerOptions,
-								anthropic: { cacheControl: { type: "ephemeral" } },
-							},
-						};
+				// Find the last TEXT part (Anthropic only supports cache control on text, not images)
+				let lastTextPartIndex = -1;
+				for (let i = (m.content as any[]).length - 1; i >= 0; i--) {
+					if ((m.content as any[])[i].type === "text") {
+						lastTextPartIndex = i;
+						break;
 					}
-					return part;
-				});
+				}
 
-				return {
-					...m,
-					content: newContent,
-				} as ModelMessage;
+				// Only add cache control if we found a text part
+				if (lastTextPartIndex >= 0) {
+					const newContent = m.content.map((part: any, partIndex: number) => {
+						// Only add providerOptions cacheControl to the LAST TEXT part
+						if (partIndex === lastTextPartIndex) {
+							return {
+								...part,
+								providerOptions: {
+									...part.providerOptions,
+									anthropic: { cacheControl: { type: "ephemeral" } },
+								},
+							};
+						}
+						return part;
+					});
+
+					return {
+						...m,
+						content: newContent,
+					} as ModelMessage;
+				}
+				// If no text parts, return message unchanged (skip cache control for image-only messages)
+				return m;
 			}
 			// Handle messages with string content (single content part)
 			else if (typeof m.content === "string") {

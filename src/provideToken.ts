@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { CancellationToken, LanguageModelChatInformation, LanguageModelChatRequestMessage } from "vscode";
+import { CancellationToken, LanguageModelChatInformation, LanguageModelChatRequestMessage, LanguageModelDataPart } from "vscode";
 import { logger } from "./outputLogger";
 
 let estimateTokenCount: ((text: string) => number) | null = null;
@@ -41,6 +41,9 @@ export async function prepareTokenCount(
 			// Tool result token calculation
 			const resultText = typeof part.content === "string" ? part.content : JSON.stringify(part.content);
 			totalTokens += await estimateTextTokens(resultText);
+		} else if (part instanceof LanguageModelDataPart) {
+			// Image data token calculation
+			totalTokens += await estimateImageTokens(part);
 		}
 	}
 	// Apply correction factor based on empirical observations
@@ -80,4 +83,23 @@ export async function estimateToolTokens(
 	total += estimateTokenCountFn(JSON.stringify(toolCall.input));
 	total += estimateTokenCountFn(JSON.stringify(toolCall.callId));
 	return total;
+}
+
+/**
+ * Estimate tokens for image data parts.
+ * Uses a conservative heuristic: 100 base tokens + ~1 token per KB of data.
+ */
+export async function estimateImageTokens(
+	dataPart: typeof LanguageModelDataPart.prototype
+): Promise<number> {
+	logger.debug(`Estimating tokens for image data part with mimeType "${dataPart.mimeType}"`);
+
+	const baseImageTokens = 100;
+	const dataSize = dataPart.data.byteLength;
+	const sizeBasedTokens = Math.ceil(dataSize / 1024);
+
+	const totalTokens = baseImageTokens + sizeBasedTokens;
+	logger.debug(`Image token estimate: ${totalTokens} (base: ${baseImageTokens}, size: ${sizeBasedTokens}, bytes: ${dataSize})`);
+
+	return totalTokens;
 }

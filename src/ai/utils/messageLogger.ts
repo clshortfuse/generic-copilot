@@ -7,6 +7,7 @@ import {
 	ProvideLanguageModelChatResponseOptions,
 	EventEmitter,
 	Event,
+	LanguageModelDataPart,
 } from "vscode";
 import { ModelMessage, StreamTextResult, LanguageModelUsage } from "ai";
 import { ModelItem } from "../../types";
@@ -40,6 +41,16 @@ export interface LoggedRequest {
 }
 
 /**
+ * Metadata for logged data parts (images, files, etc.)
+ * Stores only metadata to avoid bloating logs with large binary data
+ */
+export interface LoggedDataPartMetadata {
+	mimeType: string;
+	sizeBytes: number;
+	timestamp?: Date;
+}
+
+/**
  * Represents a response received from the language model
  */
 export interface LoggedResponse {
@@ -50,6 +61,7 @@ export interface LoggedResponse {
 	textParts?: LanguageModelTextPart[];
 	thinkingParts?: LanguageModelThinkingPart[];
 	toolCallParts?: LanguageModelToolCallPart[];
+	dataPartMetadata?: LoggedDataPartMetadata[];
 
 	// /** Raw usage data from the provider (unprocessed) */
 	rawUsage?: any;

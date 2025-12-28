@@ -7,6 +7,7 @@ import {
 	ProvideLanguageModelChatResponseOptions,
 	LanguageModelResponsePart2 as LanguageModelResponsePart, //part of proposed api
 	CancellationToken,
+	LanguageModelDataPart,
 } from "vscode";
 import { updateContextStatusBar } from "../statusBar";
 import { z } from "zod";
@@ -16,7 +17,7 @@ import { generateText, JSONValue, streamText, LanguageModelUsage, StreamTextResu
 import { ModelItem, ProviderConfig, VercelType } from "../types";
 import { LM2VercelTool, normalizeToolInputs, convertToolResultToString } from "./utils/conversion";
 import { CacheRegistry, ToolCallMetadata } from "./utils/metadataCache";
-import { AssistantModelMessage, ToolModelMessage, ToolResultPart, UserModelMessage, TextPart, ReasoningOutput, SystemModelMessage, ModelMessage, LanguageModel, Provider, ProviderMetadata, ToolCallPart } from "ai";
+import { AssistantModelMessage, ToolModelMessage, ToolResultPart, UserModelMessage, TextPart, ReasoningOutput, SystemModelMessage, ModelMessage, LanguageModel, Provider, ProviderMetadata, ToolCallPart, ImagePart } from "ai";
 import { LanguageModelChatMessageRole, LanguageModelToolResultPart } from "vscode";
 import { MessageLogger, LoggedRequest, LoggedResponse, LoggedInteraction } from "./utils/messageLogger";
 import { logger } from "../outputLogger";
@@ -115,6 +116,7 @@ export abstract class ProviderClient {
 			textParts: [],
 			thinkingParts: [],
 			toolCallParts: [],
+			dataPartMetadata: [],
 		};
 
 		return {
@@ -282,7 +284,7 @@ export abstract class ProviderClient {
 			}
 			if (message.role === LanguageModelChatMessageRole.User) {
 				logger.debug(`Processing user message`);
-				const textParts: string[] = [];
+				const contentParts: (string | ImagePart)[] = [];
 				const toolResults: ToolResultPart[] = [];
 
 				for (const part of message.content) {
@@ -295,14 +297,35 @@ export abstract class ProviderClient {
 							output: { type: "text", value: convertToolResultToString(part.content[0]) },
 						});
 					} else if (part instanceof LanguageModelTextPart) {
-						textParts.push(part.value);
+						contentParts.push(part.value);
+					} else if (part instanceof LanguageModelDataPart) {
+						logger.debug(`Processing data part with mimeType "${part.mimeType}"`);
+						contentParts.push({
+							type: "image",
+							image: part.data,
+							mediaType: part.mimeType,
+						} as ImagePart);
+
 					}
 				}
 
 				if (toolResults.length > 0) {
 					messagesPayload.push({ role: "tool", content: toolResults } as ToolModelMessage);
 				} else {
-					messagesPayload.push({ role: "user", content: textParts.join("\n") } as UserModelMessage);
+					// Handle single text vs mixed content
+					if (contentParts.length === 1 && typeof contentParts[0] === "string") {
+						messagesPayload.push({ role: "user", content: contentParts[0] } as UserModelMessage);
+					} else if (contentParts.length > 0) {
+						// Convert strings to TextPart for mixed content
+						const normalizedContent = contentParts.map(part =>
+							typeof part === "string"
+								? { type: "text" as const, text: part }
+								: part
+						);
+						messagesPayload.push({ role: "user", content: normalizedContent } as UserModelMessage);
+					} else {
+						messagesPayload.push({ role: "user", content: "" } as UserModelMessage);
+					}
 				}
 			}
 
