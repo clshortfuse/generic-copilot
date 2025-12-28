@@ -78,7 +78,7 @@ export const Message: React.FC<MessageProps> = ({ role, content }) => {
                         ) : (
                             // Non-tool part: display as text (stringify complex objects), preserve newlines
                             <pre key={idx} style={{ display: 'inline', whiteSpace: 'pre-wrap', margin: 0 }}>
-                                {typeof part === 'string' ? part : JSON.stringify(part, null, 2)}
+                                {typeof part === 'string' ? part : "Complex Object"}
                             </pre>
                         )
                     )

@@ -5,14 +5,36 @@ export function stringifyContent(c: unknown): string {
     if (c === undefined || c === null) return '';
     if (Array.isArray(c)) {
         return c
-            .map((item) => (typeof item === 'string' ? item : JSON.stringify(item, null, 2)))
+            .map((item) => (typeof item === 'string' ? item : JSON.stringify(filterBinaryFields(item), null, 2)))
             .join('\n');
     }
     try {
-        return JSON.stringify(c, null, 2);
+        return JSON.stringify(filterBinaryFields(c), null, 2);
     } catch {
         return String(c);
     }
+}
+
+function filterBinaryFields(obj: unknown): unknown {
+    if (obj === null || obj === undefined) return obj;
+
+    if (Array.isArray(obj)) {
+        return obj.map(filterBinaryFields);
+    }
+
+    if (typeof obj === 'object') {
+        const filtered: Record<string, any> = {};
+        for (const [key, value] of Object.entries(obj as Record<string, any>)) {
+            // Skip $mid and data fields
+            if (key === '$mid' || key === 'data') {
+                continue;
+            }
+            filtered[key] = filterBinaryFields(value);
+        }
+        return filtered;
+    }
+
+    return obj;
 }
 
 export interface ToolCallProps {

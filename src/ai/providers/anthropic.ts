@@ -3,6 +3,7 @@ import { createAnthropic, AnthropicProviderSettings } from "@ai-sdk/anthropic";
 import { ProviderClient } from "../providerClient";
 import { LanguageModelChatRequestMessage, ProvideLanguageModelChatResponseOptions } from "vscode";
 import { ModelMessage } from "ai";
+import { logger } from "../../outputLogger";
 
 /**
  * Adds ephemeral cache control to the last tool for Anthropic-based providers.

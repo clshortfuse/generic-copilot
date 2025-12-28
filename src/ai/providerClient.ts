@@ -299,13 +299,16 @@ export abstract class ProviderClient {
 					} else if (part instanceof LanguageModelTextPart) {
 						contentParts.push(part.value);
 					} else if (part instanceof LanguageModelDataPart) {
-						logger.debug(`Processing data part with mimeType "${part.mimeType}"`);
-						contentParts.push({
-							type: "image",
-							image: part.data,
-							mediaType: part.mimeType,
-						} as ImagePart);
+						logger.debug(`Processing data part with mimeType "${part.mimeType}", size: ${part.data.byteLength} bytes`);
 
+						// Validate that the MIME type is actually for an image
+						if (part.mimeType && part.mimeType.startsWith('image/')) {
+							contentParts.push({
+								type: "image",
+								image: part.data,
+								mediaType: part.mimeType,
+							} as ImagePart);
+						}
 					}
 				}
 
