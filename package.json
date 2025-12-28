@@ -30,7 +30,8 @@
 	"enabledApiProposals": [
 		"chatProvider",
 		"languageModelThinkingPart",
-		"languageModelSystem"
+		"languageModelSystem",
+		"languageModelCapabilities"
 	],
 	"activationEvents": [
 		"onStartupFinished",
@@ -196,6 +197,11 @@
 											"openai-compatible"
 										],
 										"description": "(Optional) LiteLLM API type. Required only when using the 'litellm' provider type. Specifies which underlying API the LiteLLM provider should use for this model."
+									},
+									"supports_images": {
+										"type": "boolean",
+										"default": false,
+										"description": "(Optional) Whether this model supports image inputs. When enabled, the model can accept images in chat messages via LanguageModelDataPart. Defaults to false."
 									}
 								}
 							},

@@ -7,6 +7,7 @@ import {
     VscodeFormHelper,
     VscodeSingleSelect,
     VscodeOption,
+    VscodeCheckbox,
 } from '@vscode-elements/react-elements';
 
 export interface ModelPropertiesProps {
@@ -63,6 +64,18 @@ const ModelPropertiesForm: React.FC<ModelPropertiesProps> = ({ value, onChange }
                     <VscodeOption value="openai-compatible">openai-compatible</VscodeOption>
                 </VscodeSingleSelect>
                 <VscodeFormHelper>Required for LiteLLM provider. Specifies which underlying API to use.</VscodeFormHelper>
+            </div>
+
+            <div className="form-field">
+                <VscodeCheckbox
+                    checked={value?.supports_images ?? false}
+                    onChange={(e: any) => update('supports_images', e.currentTarget.checked)}
+                >
+                    Supports Images
+                </VscodeCheckbox>
+                <VscodeFormHelper>
+                    Enable if this model supports image inputs. When enabled, the model can receive images in chat messages.
+                </VscodeFormHelper>
             </div>
         </div>
     );

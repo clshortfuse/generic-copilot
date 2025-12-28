@@ -59,6 +59,7 @@ export async function prepareLanguageModelChatInformation(
 				maxOutputTokens: maxOutput,
 				capabilities: {
 					toolCalling: true,
+					imageInput: props.supports_images ?? false,
 				},
 			} satisfies LanguageModelChatInformation;
 		});
