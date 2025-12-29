@@ -1,5 +1,10 @@
 # Changelog
 
+## [v0.21.2] - 2025-12-28
+
+- fix: update cache control logic for mixed content in Anthropic messages (1c83cb1)
+
+
 ## [v0.21.1] - 2025-12-28
 
 - Fix cache control keys and logging for images (a668048)
