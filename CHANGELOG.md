@@ -1,5 +1,10 @@
 # Changelog
 
+## [v0.22.0] - 2026-01-09
+
+- No changes detected (manual release).
+
+
 ## [v0.21.2] - 2025-12-28
 
 - fix: update cache control logic for mixed content in Anthropic messages (1c83cb1)
